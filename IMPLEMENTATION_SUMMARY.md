@@ -245,7 +245,7 @@ ______________________________________________________________________
 - Technology stack
 - Documentation links
 
-**2. docs/TESTING.md** (8.5 KB) [Existing]
+**2. docs/testing.md** (8.5 KB) [Existing]
 
 - Test architecture and organization
 - Running tests (unit, integration, E2E)
@@ -254,7 +254,7 @@ ______________________________________________________________________
 - CI/CD integration
 - Troubleshooting guide
 
-**3. docs/CI_CD.md** (14 KB) [Existing]
+**3. docs/ci-cd.md** (14 KB) [Existing]
 
 - Workflow architecture
 - Execution order and dependencies
@@ -437,8 +437,8 @@ ______________________________________________________________________
 **Documentation**:
 
 - `README.md`
-- `docs/TESTING.md`
-- `docs/CI_CD.md`
+- `docs/testing.md`
+- `docs/ci-cd.md`
 - `CONTRIBUTING.md`
 
 ### Modified Files (6 files)

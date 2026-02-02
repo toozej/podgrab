@@ -3,11 +3,15 @@
 Self-hosted podcast manager for automatically downloading and managing podcast
 episodes.
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/akhilrex/podgrab/build.yml?branch=master)](https://github.com/akhilrex/podgrab/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/SimplicityGuy/podgrab/build.yml?branch=master)](https://github.com/SimplicityGuy/podgrab/actions)
+[![Code Quality](https://img.shields.io/github/actions/workflow/status/SimplicityGuy/podgrab/code-quality.yml?branch=master&label=code%20quality)](https://github.com/SimplicityGuy/podgrab/actions)
+[![Tests](https://img.shields.io/github/actions/workflow/status/SimplicityGuy/podgrab/test.yml?branch=master&label=tests)](https://github.com/SimplicityGuy/podgrab/actions)
+[![E2E Tests](https://img.shields.io/github/actions/workflow/status/SimplicityGuy/podgrab/e2e-test.yml?branch=master&label=e2e)](https://github.com/SimplicityGuy/podgrab/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/akhilrex/podgrab)](https://goreportcard.com/report/github.com/akhilrex/podgrab)
 [![codecov](https://codecov.io/gh/akhilrex/podgrab/branch/master/graph/badge.svg)](https://codecov.io/gh/akhilrex/podgrab)
 [![License](https://img.shields.io/github/license/akhilrex/podgrab)](LICENSE)
 [![Docker Pulls](https://img.shields.io/docker/pulls/akhilrex/podgrab)](https://hub.docker.com/r/akhilrex/podgrab)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/SimplicityGuy/podgrab)](go.mod)
 
 ## Features
 
@@ -146,7 +150,7 @@ Podgrab has comprehensive test coverage:
 - **Integration Tests**: 19 tests for complete workflows
 - **E2E Tests**: 21 browser-based tests
 
-For detailed testing documentation, see [TESTING.md](docs/TESTING.md).
+For detailed testing documentation, see [testing.md](docs/testing.md).
 
 ### Code Quality
 
@@ -161,9 +165,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ## Documentation
 
-- **[Testing Guide](docs/TESTING.md)**: Comprehensive testing documentation
-- **[CI/CD Guide](docs/CI_CD.md)**: GitHub Actions workflows and automation
+- **[Documentation Index](docs/readme.md)**: Complete documentation navigation
+- **[Testing Guide](docs/testing.md)**: Comprehensive testing documentation
+- **[CI/CD Guide](docs/ci-cd.md)**: GitHub Actions workflows and automation
 - **[Contributing](CONTRIBUTING.md)**: How to contribute to Podgrab
+- **[Implementation Summary](IMPLEMENTATION_SUMMARY.md)**: Testing & CI/CD
+  transformation details
 - **[API Documentation](docs/api/)**: REST API reference
 - **[Architecture](docs/architecture/)**: System design and architecture
 
@@ -198,6 +205,31 @@ file for details.
 - **Discussions**:
   [GitHub Discussions](https://github.com/akhilrex/podgrab/discussions)
 
+## Credits
+
+### Original Author
+
+**Podgrab** was created and is maintained by
+**[Akhil Gupta](https://github.com/akhilrex)** (akhilrex).
+
+- **Original Repository**: <https://github.com/akhilrex/podgrab>
+- **Docker Hub**: <https://hub.docker.com/r/akhilrex/podgrab>
+
+### This Fork
+
+This fork includes comprehensive testing infrastructure and CI/CD enhancements:
+
+- 100+ tests (unit, integration, E2E) achieving 85%+ coverage
+- Enterprise-grade GitHub Actions workflows
+- Automated quality gates with pre-commit hooks
+- Complete documentation suite
+
+**Testing & CI/CD Implementation**: Claude Sonnet 4.5 (Anthropic)
+
 ## Acknowledgments
 
-Built with ❤️ using Go and open source libraries.
+Built with ❤️ using Go and open source libraries. Special thanks to:
+
+- The Go community for excellent tooling and libraries
+- Contributors to gofeed, gin, gorm, and other dependencies
+- The Podgrab community for feedback and contributions

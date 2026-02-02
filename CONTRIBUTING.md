@@ -221,7 +221,7 @@ func TestMyFunction(t *testing.T) {
 - Focus on happy paths
 - Add screenshots on failure
 
-See [docs/TESTING.md](docs/TESTING.md) for detailed testing guide.
+See [docs/testing.md](docs/testing.md) for detailed testing guide.
 
 ## Pull Request Process
 

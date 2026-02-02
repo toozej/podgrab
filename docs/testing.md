@@ -386,5 +386,6 @@ See `.github/workflows/test.yml` and `.github/workflows/e2e-test.yml`
 - [Go Testing Documentation](https://golang.org/pkg/testing/)
 - [testify Documentation](https://github.com/stretchr/testify)
 - [chromedp Documentation](https://github.com/chromedp/chromedp)
-- [Testing Progress](./TESTING_PROGRESS.md) - Detailed test implementation
-  status
+- [Implementation Summary](../IMPLEMENTATION_SUMMARY.md) - Complete testing &
+  CI/CD transformation details
+- [CI/CD Documentation](./ci-cd.md) - GitHub Actions workflows and automation

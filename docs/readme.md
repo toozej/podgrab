@@ -29,14 +29,18 @@ architecture, deployment, API usage, and development.
 - **[REST API](api/rest-api.md)** - Complete REST API reference
 - **[WebSocket API](api/websocket.md)** - Real-time WebSocket communication
 
+### Testing & Quality
+
+- **[Testing Guide](testing.md)** - Comprehensive testing documentation (unit,
+  integration, E2E)
+- **[CI/CD Guide](ci-cd.md)** - GitHub Actions workflows and automation
+- **[Pre-commit Hooks](development/pre-commit.md)** - Code quality automation
+
 ### Development
 
 - **[Development Setup](development/setup.md)** - Setting up your development
   environment
-- **[Contributing Guide](development/contributing.md)** - How to contribute to
-  Podgrab
-- **[Testing Guide](development/testing.md)** - Testing strategies and manual
-  testing procedures
+- **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute to Podgrab
 
 ### User Guides
 
@@ -61,17 +65,18 @@ Contributing to Podgrab? Check these docs:
 1. [System Design](architecture/system-design.md) - Understand the codebase
    architecture
 1. [Development Setup](development/setup.md) - Set up your dev environment
-1. [Contributing Guide](development/contributing.md) - Learn our development
-   workflow
+1. [Contributing Guide](../CONTRIBUTING.md) - Learn our development workflow
+1. [Testing Guide](testing.md) - Testing strategies and coverage requirements
+1. [CI/CD Guide](ci-cd.md) - GitHub Actions workflows and automation
 1. [REST API](api/rest-api.md) - Understand the API endpoints
 
 ## 📖 Additional Resources
 
+- **[Main README](../README.md)** - Project overview and quick start
+- **[Implementation Summary](../IMPLEMENTATION_SUMMARY.md)** - Testing & CI/CD
+  transformation details
 - **[CLAUDE.md](../CLAUDE.md)** - AI assistant guide for working with this
   codebase
-- **[Main README](../Readme.md)** - Project overview and quick start
-- **[Scripts Documentation](../scripts/README.md)** - Utility scripts for
-  maintenance
 
 ## 🔍 Navigation Tips
 
