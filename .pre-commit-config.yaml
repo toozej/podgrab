@@ -1,0 +1,139 @@
+# Pre-commit configuration for Podgrab (Go project)
+# See https://pre-commit.com for more information
+
+# Install: pre-commit install && pre-commit install --hook-type commit-msg
+# Run: pre-commit run --all-files
+# Update: pre-commit autoupdate --freeze
+
+default_language_version:
+  python: python3
+
+default_stages: [pre-commit]
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=10000']
+        exclude: '^(webassets/|assets/)'
+
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: detect-private-key
+
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+        types: [text]
+
+      - id: end-of-file-fixer
+        types: [text]
+        exclude: '^(webassets/|client/|go.sum)'
+
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+        types: [text]
+
+      - id: check-yaml
+        args: ['--unsafe']
+        exclude: '^.github/workflows/'
+
+      - id: check-json
+        exclude: '^(go.sum|package-lock.json)'
+
+      - id: check-toml
+
+  # Go-specific hooks (primary language)
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: fb24a639f7c938759fe56eeebbb7713b69d60494  # frozen: v0.5.1
+    hooks:
+      - id: go-fmt
+        args: ['-w', '-s']
+
+      - id: go-imports
+        args: ['-w']
+
+      - id: go-vet
+        args: ['./...']
+
+      - id: go-mod-tidy
+
+      - id: go-build
+        args: ['./...']
+
+      - id: go-cyclo
+        args: ['-over', '22']
+
+  # golangci-lint - comprehensive Go linting
+  - repo: https://github.com/golangci/golangci-lint
+    rev: e2e40021c9007020676c93680a36e3ab06c6cd33  # frozen: v2.8.0
+    hooks:
+      - id: golangci-lint
+        args:
+          - --timeout=5m
+          - --config=.golangci.yml
+
+  # Go security scanning (gosec doesn't support pre-commit - run manually with: gosec -exclude-generated -severity=medium -confidence=medium ./...)
+  # - repo: https://github.com/securego/gosec
+  #   rev: v2.18.2
+  #   hooks:
+  #     - id: gosec
+  #       args:
+  #         - -exclude-generated
+  #         - -severity=medium
+  #         - -confidence=medium
+  #         - ./...
+
+  # Markdown formatting (using mdformat)
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 2d496dbc18e31b83a1596685347ffe0b6041daf0  # frozen: 1.0.0
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-gfm
+        args:
+          - --wrap=80
+        exclude: '^(go.sum|vendor/|CHANGELOG.md)'
+
+  # YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
+    hooks:
+      - id: yamllint
+        args: ['-c', '.yamllint.yml']
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: 4e697ba704fd23b2409b947a319c19c3ee54d24f  # frozen: v2.14.0
+    hooks:
+      - id: hadolint-docker
+        args:
+          - --ignore=DL3018
+          - --ignore=DL3059
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: 745eface02aef23e168a8afb6b5737818efbea95  # frozen: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        args: ['--severity=warning']
+        files: \.(sh|bash)$
+
+  # Secret detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: 68e8b45440415753fff70a312ece8da92ba85b4a  # frozen: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: '^(go.sum|\.env\.example)$'
+
+# CI configuration
+ci:
+  autofix_commit_msg: '[pre-commit.ci] auto fixes from pre-commit hooks'
+  autofix_prs: true
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [golangci-lint, gosec]  # Skip slow hooks in CI
+  submodules: false
