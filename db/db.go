@@ -11,10 +11,10 @@ import (
 	"gorm.io/gorm"
 )
 
-//DB is
+// DB is
 var DB *gorm.DB
 
-//Init is used to Initialize Database
+// Init is used to Initialize Database
 func Init() (*gorm.DB, error) {
 	// github.com/mattn/go-sqlite3
 	configPath := os.Getenv("CONFIG")
@@ -33,7 +33,7 @@ func Init() (*gorm.DB, error) {
 	return DB, nil
 }
 
-//Migrate Database
+// Migrate Database
 func Migrate() {
 	DB.AutoMigrate(&Podcast{}, &PodcastItem{}, &Setting{}, &Migration{}, &JobLock{}, &Tag{})
 	RunMigrations()

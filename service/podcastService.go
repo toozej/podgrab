@@ -35,7 +35,7 @@ func ParseOpml(content string) (model.OpmlModel, error) {
 	return response, err
 }
 
-//FetchURL is
+// FetchURL is
 func FetchURL(url string) (model.PodcastData, []byte, error) {
 	body, err := makeQuery(url)
 	if err != nil {
