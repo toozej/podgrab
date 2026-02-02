@@ -1,0 +1,167 @@
+# golangci-lint configuration for Podgrab
+# Documentation: https://golangci-lint.run/usage/configuration/
+
+version: 2
+
+run:
+  timeout: 5m
+  tests: true
+  skip-dirs:
+    - vendor
+    - webassets
+    - client
+  skip-files:
+    - ".*\\.pb\\.go$"
+  modules-download-mode: readonly
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
+  sort-results: true
+
+linters:
+  enable:
+    # Default linters
+    - errcheck      # Check for unchecked errors
+    - govet         # Vet examines Go source code
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Go static analysis
+    - unused        # Check for unused constants, variables, functions and types
+
+    # Additional recommended linters
+    - bodyclose     # Check HTTP response body is closed
+    - dupl          # Code clone detection
+    - gocyclo       # Cyclomatic complexity
+    - gosec         # Security problems
+    - misspell      # Spell check
+    - prealloc      # Preallocate slices
+    - unconvert     # Unnecessary type conversions
+    - unparam       # Unused function parameters
+    - whitespace    # Whitespace issues
+
+    # Style linters
+    - gocritic      # Opinionated Go source code checker
+    - revive        # Fast, configurable, extensible, flexible linter
+
+  disable:
+    - exhaustive    # Too strict for this codebase
+    - funlen        # Function length (not critical)
+    - gochecknoglobals  # Global variables used appropriately
+    - gochecknoinits    # Init functions used appropriately
+    - gocognit      # Cognitive complexity (too strict)
+    - godot         # Comment formatting (too strict)
+    - lll           # Line length (not critical)
+    - nestif        # Nesting depth (refactor gradually)
+    - nlreturn      # Blank line before return (stylistic)
+    - testpackage   # Separate test package not required
+    - wsl           # Whitespace linter (too opinionated)
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+    exclude-functions:
+      - (*database/sql.Rows).Close
+      - (*database/sql.DB).Close
+
+  govet:
+    check-shadowing: true
+    enable-all: true
+
+  gocyclo:
+    min-complexity: 22  # Warn on complexity > 22
+
+  dupl:
+    threshold: 100  # Tokens before duplicate code warning
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+    disabled-checks:
+      - ifElseChain
+      - singleCaseSwitch
+
+  misspell:
+    locale: US
+    ignore-words:
+      - podgrab
+      - podcast
+      - podcastindex
+      - gorm
+      - sqlite
+
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: true
+
+  revive:
+    confidence: 0.8
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: indent-error-flow
+      - name: superfluous-else
+      - name: unreachable-code
+
+  gosec:
+    severity: medium
+    confidence: medium
+    excludes:
+      - G104  # Unhandled errors (covered by errcheck)
+      - G304  # File path provided as input (needed for file downloads)
+
+  whitespace:
+    multi-if: false
+    multi-func: false
+
+issues:
+  max-issues-per-linter: 50
+  max-same-issues: 3
+  new: false
+  fix: true
+
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+
+    # Exclude known issues in legacy code
+    - path: main\.go
+      text: ".*SA1019.*"  # Deprecated function usage
+
+    # Ignore specific gosec warnings for download functionality
+    - linters:
+        - gosec
+      text: "G107"  # Url provided to HTTP request as taint input
+
+    # Ignore errors in auto-generated code
+    - path: .*\.pb\.go
+      linters:
+        - all
+
+  exclude-use-default: false
+  exclude:
+    # Ignore deprecation warnings for now (will fix gradually)
+    - "SA1019:"
+    # Exclude common false positives
+    - "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*print(f|ln)?|os\\.(Un)?Setenv). is not checked"
