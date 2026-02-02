@@ -26,6 +26,22 @@ func Download(link string, episodeTitle string, podcastName string, prefix strin
 	if link == "" {
 		return "", errors.New("Download path empty")
 	}
+
+	// Calculate file path first
+	fileName := getFileName(link, episodeTitle, ".mp3")
+	if prefix != "" {
+		fileName = fmt.Sprintf("%s-%s", prefix, fileName)
+	}
+	folder := createDataFolderIfNotExists(podcastName)
+	finalPath := path.Join(folder, fileName)
+
+	// Check if file already exists - skip download if it does
+	if _, err := os.Stat(finalPath); !os.IsNotExist(err) {
+		changeOwnership(finalPath)
+		return finalPath, nil
+	}
+
+	// File doesn't exist, proceed with download
 	client := httpClient()
 
 	req, err := getRequest(link)
@@ -39,16 +55,9 @@ func Download(link string, episodeTitle string, podcastName string, prefix strin
 		return "", err
 	}
 
-	fileName := getFileName(link, episodeTitle, ".mp3")
-	if prefix != "" {
-		fileName = fmt.Sprintf("%s-%s", prefix, fileName)
-	}
-	folder := createDataFolderIfNotExists(podcastName)
-	finalPath := path.Join(folder, fileName)
-
-	if _, err := os.Stat(finalPath); !os.IsNotExist(err) {
-		changeOwnership(finalPath)
-		return finalPath, nil
+	// Check HTTP status code
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", fmt.Errorf("HTTP error: %d %s", resp.StatusCode, resp.Status)
 	}
 
 	file, err := os.Create(finalPath)

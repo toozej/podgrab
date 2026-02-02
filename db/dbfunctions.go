@@ -152,7 +152,12 @@ func DeletePodcastItemById(id string) error {
 	return result.Error
 }
 func DeletePodcastById(id string) error {
+	// Delete associated podcast items first
+	if err := DB.Where("podcast_id = ?", id).Delete(&PodcastItem{}).Error; err != nil {
+		return err
+	}
 
+	// Then delete the podcast
 	result := DB.Where("id=?", id).Delete(&Podcast{})
 	return result.Error
 }
@@ -212,6 +217,11 @@ func GetAllPodcastItemsWithoutImage() (*[]PodcastItem, error) {
 }
 
 func GetAllPodcastItemsToBeDownloaded() (*[]PodcastItem, error) {
+	// Return empty slice if database is not available
+	if DB == nil {
+		return &[]PodcastItem{}, nil
+	}
+
 	var podcastItems []PodcastItem
 	result := DB.Preload(clause.Associations).Where("download_status=?", NotDownloaded).Find(&podcastItems)
 	//fmt.Println("To be downloaded : " + string(len(podcastItems)))
@@ -317,6 +327,11 @@ func UpdateSettings(setting *Setting) error {
 	return tx.Error
 }
 func GetOrCreateSetting() *Setting {
+	// Return default setting if database is not available
+	if DB == nil {
+		return &Setting{}
+	}
+
 	var setting Setting
 	result := DB.First(&setting)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -327,6 +342,13 @@ func GetOrCreateSetting() *Setting {
 }
 
 func GetLock(name string) *JobLock {
+	// Return unlocked job if database is not available
+	if DB == nil {
+		return &JobLock{
+			Name: name,
+		}
+	}
+
 	var jobLock JobLock
 	result := DB.Where("name = ?", name).First(&jobLock)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -337,6 +359,11 @@ func GetLock(name string) *JobLock {
 	return &jobLock
 }
 func Lock(name string, duration int) {
+	// Skip if database is not available
+	if DB == nil {
+		return
+	}
+
 	jobLock := GetLock(name)
 	if jobLock == nil {
 		jobLock = &JobLock{
@@ -352,6 +379,11 @@ func Lock(name string, duration int) {
 	}
 }
 func Unlock(name string) {
+	// Skip if database is not available
+	if DB == nil {
+		return
+	}
+
 	jobLock := GetLock(name)
 	if jobLock == nil {
 		return

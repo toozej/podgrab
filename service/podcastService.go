@@ -513,6 +513,11 @@ func GetPodcastPrefix(item *db.PodcastItem, setting *db.Setting) string {
 	return prefix
 }
 func DownloadMissingEpisodes() error {
+	// Early return if database is not available (e.g., during test cleanup)
+	if db.DB == nil {
+		return nil
+	}
+
 	const JOB_NAME = "DownloadMissingEpisodes"
 	lock := db.GetLock(JOB_NAME)
 	if lock.IsLocked() {
@@ -629,8 +634,8 @@ func RefreshEpisodes() error {
 		}
 		AddPodcastItems(&item, isNewPodcast)
 	}
-	//	setting := db.GetOrCreateSetting()
 
+	// Spawn background download (DownloadMissingEpisodes handles nil DB gracefully)
 	go DownloadMissingEpisodes()
 
 	return nil
