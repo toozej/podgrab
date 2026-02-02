@@ -1,10 +1,12 @@
 # Architecture Overview
 
-This document provides a high-level overview of Podgrab's system architecture, including component interactions, data flow, and key design decisions.
+This document provides a high-level overview of Podgrab's system architecture,
+including component interactions, data flow, and key design decisions.
 
 ## System Overview
 
-Podgrab is a self-hosted podcast manager built as a monolithic web application with the following characteristics:
+Podgrab is a self-hosted podcast manager built as a monolithic web application
+with the following characteristics:
 
 - **Backend**: Go 1.15+ with Gin web framework
 - **Database**: SQLite with GORM ORM
@@ -121,12 +123,14 @@ graph LR
 ### 1. HTTP Layer
 
 **Gin Router** (`main.go`)
+
 - Request routing and middleware management
 - Basic authentication (optional)
 - Static file serving
 - Template rendering with custom functions
 
 **Controllers** (`controllers/`)
+
 - `podcast.go`: REST API endpoints for podcasts, episodes, tags
 - `pages.go`: HTML page rendering
 - `websockets.go`: Real-time communication
@@ -134,12 +138,14 @@ graph LR
 ### 2. Service Layer
 
 **Podcast Service** (`service/podcastService.go`)
+
 - RSS feed parsing and podcast discovery
 - Episode management and download orchestration
 - OPML import/export
 - iTunes search integration
 
 **File Service** (`service/fileService.go`)
+
 - Episode file downloads with concurrency control
 - Filename sanitization and organization
 - Image caching
@@ -147,21 +153,25 @@ graph LR
 - Backup creation
 
 **iTunes Service** (`service/itunesService.go`)
+
 - Podcast search via iTunes API
 - Metadata retrieval
 
 **GPodder Service** (`service/gpodderService.go`)
+
 - GPodder API integration
 - Podcast directory browsing
 
 ### 3. Data Layer
 
 **Database Functions** (`db/dbfunctions.go`)
+
 - CRUD operations for all entities
 - Complex queries with statistics
 - Transaction management
 
 **Models** (`db/podcast.go`)
+
 - `Podcast`: Feed metadata and settings
 - `PodcastItem`: Individual episodes
 - `Tag`: Organizational labels
@@ -169,6 +179,7 @@ graph LR
 - `JobLock`: Background job coordination
 
 **External Models** (`model/`)
+
 - RSS feed parsing structures
 - iTunes API responses
 - OPML import/export formats
@@ -176,6 +187,7 @@ graph LR
 ### 4. Background Jobs
 
 **Scheduler** (via `gocron`)
+
 - `RefreshEpisodes()`: Checks RSS feeds for new episodes
 - `DownloadMissingEpisodes()`: Downloads queued episodes
 - `CheckMissingFiles()`: Detects deleted files
@@ -261,6 +273,7 @@ sequenceDiagram
 ## Data Flow Patterns
 
 ### 1. Read-Heavy Operations
+
 - Browsing podcasts and episodes
 - Streaming audio files
 - Viewing podcast details
@@ -268,6 +281,7 @@ sequenceDiagram
 **Pattern**: Direct database queries with minimal processing
 
 ### 2. Write-Heavy Operations
+
 - Adding new podcasts
 - Downloading episodes
 - Updating settings
@@ -275,6 +289,7 @@ sequenceDiagram
 **Pattern**: Service layer coordination with database transactions
 
 ### 3. Background Processing
+
 - RSS feed refresh
 - Episode downloads
 - File maintenance
@@ -319,6 +334,7 @@ graph TB
 ```
 
 **Key Concurrency Features**:
+
 - HTTP server handles requests concurrently
 - Background scheduler runs in separate goroutine
 - Download workers limited by `MaxDownloadConcurrency` setting (default: 5)
@@ -327,17 +343,17 @@ graph TB
 
 ## Technology Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Web Framework | Gin | HTTP routing, middleware, template rendering |
-| ORM | GORM | Database abstraction, migrations |
-| Database | SQLite | Embedded relational database |
-| Scheduler | gocron | Background job scheduling |
-| WebSocket | gorilla/websocket | Real-time client updates |
-| RSS Parsing | encoding/xml + custom models | Feed parsing |
-| HTML Parsing | bluemonday + html-strip-tags | Content sanitization |
-| Logging | uber/zap | Structured logging |
-| UUID | satori/go.uuid | Unique identifiers |
+| Layer         | Technology                   | Purpose                                      |
+| ------------- | ---------------------------- | -------------------------------------------- |
+| Web Framework | Gin                          | HTTP routing, middleware, template rendering |
+| ORM           | GORM                         | Database abstraction, migrations             |
+| Database      | SQLite                       | Embedded relational database                 |
+| Scheduler     | gocron                       | Background job scheduling                    |
+| WebSocket     | gorilla/websocket            | Real-time client updates                     |
+| RSS Parsing   | encoding/xml + custom models | Feed parsing                                 |
+| HTML Parsing  | bluemonday + html-strip-tags | Content sanitization                         |
+| Logging       | uber/zap                     | Structured logging                           |
+| UUID          | satori/go.uuid               | Unique identifiers                           |
 
 ## Deployment Architecture
 
@@ -380,17 +396,20 @@ graph TB
 ## Security Model
 
 ### Authentication
+
 - Optional HTTP Basic Authentication
 - Username: `podgrab` (fixed)
 - Password: Set via `PASSWORD` environment variable
 - Applied to all routes when enabled
 
 ### Data Security
+
 - No encryption at rest (SQLite file is plain)
 - No built-in HTTPS (requires reverse proxy)
 - WebSocket inherits HTTP authentication
 
 ### File System Security
+
 - Downloads stored in configurable directory
 - Filename sanitization prevents path traversal
 - File permissions set to 777 for volume compatibility
@@ -398,12 +417,14 @@ graph TB
 ## Scalability Considerations
 
 ### Current Limitations
+
 - **Single instance**: SQLite doesn't support multiple writers
 - **File storage**: Local filesystem only
 - **No caching layer**: Direct database queries
 - **Memory-bound**: All operations in-process
 
 ### Scaling Strategies
+
 - **Horizontal**: Not supported (SQLite limitation)
 - **Vertical**: Increase container resources for more concurrent downloads
 - **Storage**: Mount larger volumes for more episodes
@@ -411,27 +432,30 @@ graph TB
 
 ## Performance Characteristics
 
-| Operation | Performance | Notes |
-|-----------|-------------|-------|
-| Add Podcast | 1-5 seconds | Depends on RSS feed fetch time |
-| Browse Podcasts | <100ms | Direct SQLite query |
-| Episode Download | Variable | Depends on file size and network |
-| RSS Refresh | 1-10 seconds per feed | Runs in background |
-| WebSocket Update | <10ms | Direct goroutine communication |
+| Operation        | Performance           | Notes                            |
+| ---------------- | --------------------- | -------------------------------- |
+| Add Podcast      | 1-5 seconds           | Depends on RSS feed fetch time   |
+| Browse Podcasts  | \<100ms               | Direct SQLite query              |
+| Episode Download | Variable              | Depends on file size and network |
+| RSS Refresh      | 1-10 seconds per feed | Runs in background               |
+| WebSocket Update | \<10ms                | Direct goroutine communication   |
 
 ## Monitoring and Observability
 
 ### Logging
+
 - Structured logging via uber/zap
 - Console output (stdout/stderr)
 - Log levels: Info, Error, Debug
 
 ### Metrics
+
 - No built-in metrics collection
 - Job execution tracked via `JobLock` table
 - Download status in `PodcastItem.DownloadStatus`
 
 ### Health Checks
+
 - No dedicated health endpoint
 - Application responds to HTTP requests when healthy
 - Database connection errors logged
@@ -443,6 +467,7 @@ graph TB
 - [Database Schema](database-schema.md) - Data model details
 - [REST API](../api/rest-api.md) - API endpoint reference
 
----
+______________________________________________________________________
 
-**Next Steps**: Review [System Design](system-design.md) for detailed architectural patterns and design decisions.
+**Next Steps**: Review [System Design](system-design.md) for detailed
+architectural patterns and design decisions.

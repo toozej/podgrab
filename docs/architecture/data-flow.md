@@ -1,6 +1,8 @@
 # Data Flow
 
-This document details how data flows through Podgrab for various operations, including request/response patterns, background job flows, and real-time update mechanisms.
+This document details how data flows through Podgrab for various operations,
+including request/response patterns, background job flows, and real-time update
+mechanisms.
 
 ## Core Data Flows
 
@@ -235,12 +237,13 @@ flowchart LR
 ```
 
 **Transformation Steps**:
+
 1. **XML Parsing**: `encoding/xml` → `model.PodcastData`
-2. **HTML Sanitization**: `bluemonday` removes unsafe HTML
-3. **Text Cleanup**: `html-strip-tags-go` removes all HTML tags
-4. **Date Parsing**: RFC822/RFC3339 → `time.Time`
-5. **URL Validation**: Ensure valid episode file URLs
-6. **GUID Extraction**: Use GUID for episode uniqueness
+1. **HTML Sanitization**: `bluemonday` removes unsafe HTML
+1. **Text Cleanup**: `html-strip-tags-go` removes all HTML tags
+1. **Date Parsing**: RFC822/RFC3339 → `time.Time`
+1. **URL Validation**: Ensure valid episode file URLs
+1. **GUID Extraction**: Use GUID for episode uniqueness
 
 ### File Download to Storage
 
@@ -582,6 +585,7 @@ flowchart TD
 - [Database Schema](database-schema.md) - Data model
 - [REST API](../api/rest-api.md) - API reference
 
----
+______________________________________________________________________
 
-**Next Steps**: Review [Database Schema](database-schema.md) for detailed data model documentation.
+**Next Steps**: Review [Database Schema](database-schema.md) for detailed data
+model documentation.

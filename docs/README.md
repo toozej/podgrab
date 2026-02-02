@@ -1,60 +1,82 @@
 # Podgrab Documentation
 
-Welcome to the Podgrab documentation. This comprehensive guide covers architecture, deployment, API usage, and development.
+Welcome to the Podgrab documentation. This comprehensive guide covers
+architecture, deployment, API usage, and development.
 
 ## 📚 Documentation Structure
 
 ### Architecture
-- **[Overview](architecture/overview.md)** - High-level system architecture and component interactions
-- **[System Design](architecture/system-design.md)** - Detailed design patterns and architectural decisions
+
+- **[Overview](architecture/overview.md)** - High-level system architecture and
+  component interactions
+- **[System Design](architecture/system-design.md)** - Detailed design patterns
+  and architectural decisions
 - **[Data Flow](architecture/data-flow.md)** - How data flows through the system
-- **[Database Schema](architecture/database-schema.md)** - Database structure and relationships
+- **[Database Schema](architecture/database-schema.md)** - Database structure
+  and relationships
 
 ### Deployment
-- **[Docker Deployment](deployment/docker.md)** - Running Podgrab with Docker and docker-compose
-- **[Production Deployment](deployment/production.md)** - Production deployment best practices
-- **[Ubuntu Installation](ubuntu-install.md)** - Native Ubuntu installation guide
+
+- **[Docker Deployment](deployment/docker.md)** - Running Podgrab with Docker
+  and docker-compose
+- **[Production Deployment](deployment/production.md)** - Production deployment
+  best practices
+- **[Ubuntu Installation](ubuntu-install.md)** - Native Ubuntu installation
+  guide
 
 ### API Documentation
+
 - **[REST API](api/rest-api.md)** - Complete REST API reference
 - **[WebSocket API](api/websocket.md)** - Real-time WebSocket communication
 
 ### Development
-- **[Development Setup](development/setup.md)** - Setting up your development environment
-- **[Contributing Guide](development/contributing.md)** - How to contribute to Podgrab
-- **[Testing Guide](development/testing.md)** - Testing strategies and manual testing procedures
+
+- **[Development Setup](development/setup.md)** - Setting up your development
+  environment
+- **[Contributing Guide](development/contributing.md)** - How to contribute to
+  Podgrab
+- **[Testing Guide](development/testing.md)** - Testing strategies and manual
+  testing procedures
 
 ### User Guides
+
 - **[User Guide](guides/user-guide.md)** - Complete user guide for Podgrab
-- **[Configuration Guide](guides/configuration.md)** - Configuration options and settings
+- **[Configuration Guide](guides/configuration.md)** - Configuration options and
+  settings
 
 ## 🚀 Quick Start
 
 New to Podgrab? Start here:
 
 1. Read the [Overview](architecture/overview.md) to understand what Podgrab does
-2. Follow the [Docker Deployment](deployment/docker.md) guide to get it running
-3. Check the [User Guide](guides/user-guide.md) to learn how to use it
-4. Review the [Configuration Guide](guides/configuration.md) to customize settings
+1. Follow the [Docker Deployment](deployment/docker.md) guide to get it running
+1. Check the [User Guide](guides/user-guide.md) to learn how to use it
+1. Review the [Configuration Guide](guides/configuration.md) to customize
+   settings
 
 ## 🛠️ For Developers
 
 Contributing to Podgrab? Check these docs:
 
-1. [System Design](architecture/system-design.md) - Understand the codebase architecture
-2. [Development Setup](development/setup.md) - Set up your dev environment
-3. [Contributing Guide](development/contributing.md) - Learn our development workflow
-4. [REST API](api/rest-api.md) - Understand the API endpoints
+1. [System Design](architecture/system-design.md) - Understand the codebase
+   architecture
+1. [Development Setup](development/setup.md) - Set up your dev environment
+1. [Contributing Guide](development/contributing.md) - Learn our development
+   workflow
+1. [REST API](api/rest-api.md) - Understand the API endpoints
 
 ## 📖 Additional Resources
 
-- **[CLAUDE.md](../CLAUDE.md)** - AI assistant guide for working with this codebase
+- **[CLAUDE.md](../CLAUDE.md)** - AI assistant guide for working with this
+  codebase
 - **[Main README](../Readme.md)** - Project overview and quick start
-- **[Scripts Documentation](../scripts/README.md)** - Utility scripts for maintenance
+- **[Scripts Documentation](../scripts/README.md)** - Utility scripts for
+  maintenance
 
 ## 🔍 Navigation Tips
 
-- All diagrams use [Mermaid](https://mermaid.js.github.io/) for easy rendering on GitHub
+- All diagrams use [Mermaid](https://mermaid.js.github.io/) for easy rendering
+  on GitHub
 - Code examples are tested against the current codebase
 - Each document includes links to related documentation
 
@@ -70,10 +92,10 @@ This documentation follows these principles:
 ## ❓ Need Help?
 
 - **Issues**: Check [GitHub Issues](https://github.com/akhilrex/podgrab/issues)
-- **Discussions**: Join [GitHub Discussions](https://github.com/akhilrex/podgrab/discussions)
+- **Discussions**: Join
+  [GitHub Discussions](https://github.com/akhilrex/podgrab/discussions)
 - **Security**: Report security issues privately to the maintainers
 
----
+______________________________________________________________________
 
-**Last Updated**: 2026-02-01
-**Version**: 2022.07.07
+**Last Updated**: 2026-02-01 **Version**: 2022.07.07

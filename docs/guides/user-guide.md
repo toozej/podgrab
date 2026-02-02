@@ -7,12 +7,14 @@ Complete guide to using Podgrab for podcast management.
 ### First Time Setup
 
 1. **Access Podgrab**
+
    - Open browser to `http://localhost:8080`
    - If password protected, enter credentials:
      - Username: `podgrab`
      - Password: `<your configured password>`
 
-2. **Configure Settings**
+1. **Configure Settings**
+
    - Click Settings (gear icon)
    - Configure initial preferences (see [Configuration Guide](configuration.md))
    - Recommended first-time settings:
@@ -20,7 +22,8 @@ Complete guide to using Podgrab for podcast management.
      - Initial Download Count: 5
      - Auto Download: ✅
 
-3. **Add Your First Podcast**
+1. **Add Your First Podcast**
+
    - Click "+ Add Podcast"
    - Choose method:
      - **Direct URL**: Paste RSS feed URL
@@ -43,6 +46,7 @@ Complete guide to using Podgrab for podcast management.
 ```
 
 **Finding RSS URLs:**
+
 - Podcast website (usually "Subscribe" or "RSS" link)
 - Podcast player apps (share/copy feed URL)
 - Podcast directories (copy feed URL)
@@ -62,6 +66,7 @@ Complete guide to using Podgrab for podcast management.
 ```
 
 **Search Tips:**
+
 - Use podcast name or host name
 - Try different search sources for better results
 - "Already Added" indicator shows existing podcasts
@@ -81,6 +86,7 @@ Complete guide to using Podgrab for podcast management.
 ```
 
 **OPML Export from Popular Apps:**
+
 - **Apple Podcasts**: File → Library → Export Library
 - **Pocket Casts**: Settings → Import/Export → Export
 - **Overcast**: Settings → OPML Export
@@ -91,6 +97,7 @@ Complete guide to using Podgrab for podcast management.
 ### Podcast List View
 
 **Home Screen** shows all podcasts with:
+
 - Cover artwork
 - Podcast title
 - Episode counts:
@@ -100,6 +107,7 @@ Complete guide to using Podgrab for podcast management.
 - Storage usage
 
 **Sorting Options:**
+
 - Date Added (newest/oldest)
 - Alphabetical (A-Z / Z-A)
 - Last Episode (newest/oldest)
@@ -107,12 +115,14 @@ Complete guide to using Podgrab for podcast management.
 ### Podcast Detail View
 
 Click podcast to see:
+
 - Podcast description
 - All episodes (paginated)
 - Episode controls
 - Podcast actions
 
 **Episode List:**
+
 - Title and description
 - Publication date
 - Duration
@@ -143,6 +153,7 @@ Click podcast to see:
 ```
 
 **Effect:**
+
 - No new episodes downloaded automatically
 - Can still manually download episodes
 - Can unpause anytime
@@ -152,33 +163,40 @@ Click podcast to see:
 **Options:**
 
 **Delete Everything:**
+
 ```
 1. Click "Delete Podcast"
 2. Confirm deletion
 ```
+
 **Removes:**
+
 - Podcast from database
 - All episode database records
 - All downloaded episode files
 
 **Delete Podcast Only:**
+
 ```
 1. Click "Delete Podcast Only"
 2. Confirm deletion
 ```
+
 **Removes:**
-- Podcast from database
-**Keeps:**
+
+- Podcast from database **Keeps:**
 - Downloaded episode files (orphaned)
 
 **Delete Episodes Only:**
+
 ```
 1. Click "Delete All Episodes"
 2. Confirm deletion
 ```
+
 **Removes:**
-- All downloaded files
-**Keeps:**
+
+- All downloaded files **Keeps:**
 - Podcast in database
 - Episode metadata
 
@@ -189,6 +207,7 @@ Click podcast to see:
 #### Download Episode
 
 **For single episode:**
+
 ```
 1. Click download icon (⬇️)
 2. Download starts immediately
@@ -197,6 +216,7 @@ Click podcast to see:
 ```
 
 **For multiple episodes:**
+
 ```
 1. Use "Download All" on podcast
 2. Or individually download each
@@ -215,6 +235,7 @@ Click podcast to see:
 #### Play Episode
 
 **In Web Player:**
+
 ```
 1. Click play icon (▶️)
 2. Player opens/updates
@@ -222,6 +243,7 @@ Click podcast to see:
 ```
 
 **Download for External Player:**
+
 ```
 1. Click episode menu (⋮)
 2. Select "Download File"
@@ -241,6 +263,7 @@ Click podcast to see:
 #### Bookmark Episode
 
 **Add Bookmark:**
+
 ```
 1. Click bookmark icon (🔖)
 2. Episode added to bookmarks
@@ -248,6 +271,7 @@ Click podcast to see:
 ```
 
 **View Bookmarks:**
+
 ```
 1. Navigate to Bookmarks view
 2. See all bookmarked episodes
@@ -255,6 +279,7 @@ Click podcast to see:
 ```
 
 **Remove Bookmark:**
+
 ```
 1. Click bookmark icon again
 2. Episode removed from bookmarks
@@ -265,28 +290,33 @@ Click podcast to see:
 **All Episodes View** (`/episodes`) offers filters:
 
 **By Podcast:**
+
 ```
 1. Select podcast from dropdown
 2. Shows only episodes from that podcast
 ```
 
 **By Tag:**
+
 ```
 1. Select tag from dropdown
 2. Shows episodes from all tagged podcasts
 ```
 
 **By Status:**
+
 ```
 - Only Downloaded: Shows downloaded episodes only
 - Only Bookmarked: Shows bookmarked episodes only
 ```
 
 **Sorting:**
+
 - Release Date (newest/oldest)
 - Duration (shortest/longest)
 
 **Pagination:**
+
 - Adjust items per page (10/20/50/100)
 - Navigate pages
 
@@ -306,6 +336,7 @@ Click podcast to see:
 ### Assign Tags to Podcasts
 
 **From Podcast Page:**
+
 ```
 1. Open podcast detail page
 2. Click "Add Tag"
@@ -314,6 +345,7 @@ Click podcast to see:
 ```
 
 **Bulk Tagging:**
+
 ```
 1. Tag multiple podcasts with same tag
 2. Use tag filters to view all together
@@ -322,12 +354,14 @@ Click podcast to see:
 ### Using Tags
 
 **Organization Examples:**
+
 - **By Topic**: Technology, News, Comedy, Education
 - **By Priority**: Must Listen, Casual, Archive
 - **By Schedule**: Daily, Weekly, Monthly
 - **By Mood**: Relaxing, Educational, Entertaining
 
 **Filter by Tag:**
+
 ```
 1. Episodes page → Select tag
 2. Player page → Queue by tag
@@ -357,6 +391,7 @@ Click podcast to see:
 ### Basic Playback
 
 **Start Playback:**
+
 ```
 1. Click play on any episode
 2. Player page opens (or updates)
@@ -364,6 +399,7 @@ Click podcast to see:
 ```
 
 **Player Controls:**
+
 - **Play/Pause**: ▶️ ⏸️
 - **Previous/Next**: ⏮️ ⏭️
 - **Seek**: Drag progress bar
@@ -375,12 +411,14 @@ Click podcast to see:
 **Add to Queue:**
 
 **Single Episode:**
+
 ```
 1. Click play icon
 2. Episode added to queue
 ```
 
 **Multiple Episodes:**
+
 ```
 Method 1: Select episodes
 1. Check episodes in list
@@ -392,12 +430,14 @@ Method 2: Play all from podcast
 ```
 
 **Reorder Queue:**
+
 ```
 1. Drag and drop episodes
 2. Queue updates immediately
 ```
 
 **Clear Queue:**
+
 ```
 1. Click "Clear Queue"
 2. Removes all episodes
@@ -409,18 +449,21 @@ Method 2: Play all from podcast
 **Scenario:** Player in one tab, browsing in another
 
 **Setup:**
+
 ```
 Tab 1: Open player page (/player)
 Tab 2: Browse podcasts/episodes
 ```
 
 **Behavior:**
+
 - Queue episodes from Tab 2
 - Automatically appear in Tab 1
 - Playback state syncs
 - Both tabs show current episode
 
 **Requirements:**
+
 - WebSocket connection active
 - Both tabs from same browser
 - No browser extensions blocking WebSocket
@@ -428,21 +471,25 @@ Tab 2: Browse podcasts/episodes
 ### Player Page Options
 
 **Play All from Podcast:**
+
 ```
 URL: /player?podcastId=<podcast-id>
 ```
 
 **Play Tagged Episodes:**
+
 ```
 URL: /player?tagIds[]=<tag-id1>&tagIds[]=<tag-id2>
 ```
 
 **Play Specific Episodes:**
+
 ```
 URL: /player?itemIds[]=<episode-id1>&itemIds[]=<episode-id2>
 ```
 
 **Play Latest:**
+
 ```
 URL: /player (no parameters)
 Shows 20 most recent downloaded episodes
@@ -453,6 +500,7 @@ Shows 20 most recent downloaded episodes
 ### Export OPML
 
 **Standard Export (Original URLs):**
+
 ```
 1. Settings → Export OPML
 2. Download podgrab-export.opml
@@ -460,6 +508,7 @@ Shows 20 most recent downloaded episodes
 ```
 
 **Podgrab Links Export:**
+
 ```
 1. Settings → Export OPML
 2. Enable "Use Podgrab Links"
@@ -468,6 +517,7 @@ Shows 20 most recent downloaded episodes
 ```
 
 **Use Cases:**
+
 - **Backup**: Save subscription list
 - **Migration**: Move to another app
 - **Sharing**: Share custom feeds with others
@@ -484,6 +534,7 @@ Shows 20 most recent downloaded episodes
 ```
 
 **Behavior:**
+
 - Duplicate detection (no duplicates added)
 - Parallel processing (faster import)
 - Auto-download triggered (if enabled)
@@ -497,6 +548,7 @@ Podgrab generates RSS feeds for sharing and external consumption.
 **URL:** `/podcasts/:id/rss`
 
 **Usage:**
+
 ```
 1. Navigate to podcast detail page
 2. Copy RSS feed URL
@@ -504,6 +556,7 @@ Podgrab generates RSS feeds for sharing and external consumption.
 ```
 
 **Features:**
+
 - Contains all podcast episodes
 - Media files served from Podgrab
 - Updates when you download new episodes
@@ -513,6 +566,7 @@ Podgrab generates RSS feeds for sharing and external consumption.
 **URL:** `/tags/:id/rss`
 
 **Usage:**
+
 ```
 1. Navigate to tag page
 2. Copy RSS feed URL
@@ -520,6 +574,7 @@ Podgrab generates RSS feeds for sharing and external consumption.
 ```
 
 **Features:**
+
 - Aggregates episodes from all tagged podcasts
 - Custom playlist functionality
 - Updates automatically
@@ -529,6 +584,7 @@ Podgrab generates RSS feeds for sharing and external consumption.
 **URL:** `/rss`
 
 **Features:**
+
 - All episodes from all podcasts
 - Master feed of your entire library
 - Useful for "play all" scenarios
@@ -536,11 +592,13 @@ Podgrab generates RSS feeds for sharing and external consumption.
 ### Feed Authentication
 
 If password protection enabled:
+
 - Feeds require HTTP Basic Auth
 - Username: `podgrab`
 - Password: `<your password>`
 
 **Example:**
+
 ```
 https://podgrab:password@podgrab.example.com/podcasts/abc123/rss
 ```
@@ -552,20 +610,24 @@ See [Configuration Guide](configuration.md) for detailed settings documentation.
 ### Quick Settings Overview
 
 **Download Settings:**
+
 - **Download on Add**: Auto-download when adding podcast
 - **Initial Download Count**: How many episodes to download initially
 - **Auto Download**: Download new episodes automatically
 - **Max Concurrency**: Concurrent downloads (default: 5)
 
 **File Naming:**
+
 - **Append Date**: Add date to filename
 - **Append Episode Number**: Add episode number to filename
 
 **UI Settings:**
+
 - **Dark Mode**: Dark theme
 - **Base URL**: Custom URL for RSS feeds
 
 **Advanced:**
+
 - **Download Episode Images**: Save episode artwork locally
 - **Generate NFO Files**: Create metadata files
 - **Don't Re-download Deleted**: Skip manually deleted episodes
@@ -574,6 +636,7 @@ See [Configuration Guide](configuration.md) for detailed settings documentation.
 ## Keyboard Shortcuts
 
 **Player:**
+
 - `Space`: Play/Pause
 - `←/→`: Seek backward/forward
 - `↑/↓`: Volume up/down
@@ -581,6 +644,7 @@ See [Configuration Guide](configuration.md) for detailed settings documentation.
 - `F`: Full screen (if supported)
 
 **Navigation:**
+
 - `H`: Home
 - `A`: Add Podcast
 - `E`: All Episodes
@@ -595,6 +659,7 @@ Podgrab is responsive and works on mobile browsers.
 ### Mobile Tips
 
 **Install as Web App (PWA):**
+
 ```
 iOS Safari:
 1. Share → Add to Home Screen
@@ -606,11 +671,13 @@ Android Chrome:
 ```
 
 **Offline Listening:**
+
 - Downloaded episodes remain accessible
 - Queue episodes before going offline
 - Player works without internet
 
 **Mobile Player:**
+
 - Touch controls work
 - Background audio (browser dependent)
 - Lock screen controls (browser dependent)
@@ -620,6 +687,7 @@ Android Chrome:
 ### Custom RSS Feed with Tags
 
 **Create Custom Playlist:**
+
 ```
 1. Create tag: "Morning Commute"
 2. Tag favorite podcasts
@@ -630,6 +698,7 @@ Android Chrome:
 ### Podgrab as Podcast Server
 
 **Share your library:**
+
 ```
 1. Enable password protection
 2. Configure reverse proxy with HTTPS
@@ -638,6 +707,7 @@ Android Chrome:
 ```
 
 **Use Cases:**
+
 - Family podcast sharing
 - Curated recommendations
 - Private podcast distribution
@@ -645,6 +715,7 @@ Android Chrome:
 ### Automated Workflows
 
 **Example: Daily news digest**
+
 ```
 1. Tag news podcasts with "Daily News"
 2. Generate tag RSS feed
@@ -657,12 +728,14 @@ Android Chrome:
 ### Common Issues
 
 **Podcast won't add:**
+
 - Verify RSS URL is correct
 - Check feed is accessible (try in browser)
 - Look for error messages
 - Check logs for details
 
 **Episodes not downloading:**
+
 - Check storage space
 - Verify network connectivity
 - Check MaxDownloadConcurrency setting
@@ -670,18 +743,21 @@ Android Chrome:
 - Review logs for errors
 
 **Player not working:**
+
 - Check browser compatibility
 - Verify file downloaded successfully
 - Try different browser
 - Check console for errors
 
 **WebSocket disconnected:**
+
 - Check reverse proxy configuration
 - Verify WebSocket upgrade headers
 - Test with different browser
 - Check firewall rules
 
 **Dark mode not saving:**
+
 - Clear browser cache
 - Check browser cookies enabled
 - Verify settings POST successful
@@ -689,9 +765,9 @@ Android Chrome:
 ### Getting Help
 
 1. **Check documentation**: Search docs for your issue
-2. **GitHub Issues**: Search existing issues
-3. **Create Issue**: If not found, create new issue with details
-4. **Community**: Discord/Reddit (if available)
+1. **GitHub Issues**: Search existing issues
+1. **Create Issue**: If not found, create new issue with details
+1. **Community**: Discord/Reddit (if available)
 
 ## Best Practices
 
@@ -728,34 +804,36 @@ Android Chrome:
 ### Power User Tips
 
 **Quick add from bookmarklet:**
+
 ```javascript
 javascript:(function(){window.location='http://localhost:8080/add?url='+encodeURIComponent(window.location.href);})()
 ```
 
 **RSS autodiscovery:**
+
 - Some podcast websites have RSS in HTML `<link>` tags
 - Browser extensions can detect and offer to add
 
 **Batch processing:**
+
 - Import OPML with many podcasts
 - Let initial downloads complete overnight
 - Organize with tags the next day
 
 **Custom playlists:**
+
 - Use tags creatively (mood, activity, length)
 - Generate RSS feeds for each playlist
 - Subscribe to own feeds in external apps
 
 ## Glossary
 
-**OPML**: Outline Processor Markup Language - subscription list format
-**RSS**: Really Simple Syndication - podcast feed format
-**Episode**: Individual podcast audio file
-**Feed**: XML file containing podcast information
-**WebSocket**: Real-time communication protocol
-**Tag**: Label for organizing podcasts
-**Bookmark**: Saved episode for later listening
-**Queue**: Playlist of episodes to play
+**OPML**: Outline Processor Markup Language - subscription list format **RSS**:
+Really Simple Syndication - podcast feed format **Episode**: Individual podcast
+audio file **Feed**: XML file containing podcast information **WebSocket**:
+Real-time communication protocol **Tag**: Label for organizing podcasts
+**Bookmark**: Saved episode for later listening **Queue**: Playlist of episodes
+to play
 
 ## Related Documentation
 
@@ -764,6 +842,6 @@ javascript:(function(){window.location='http://localhost:8080/add?url='+encodeUR
 - [WebSocket API](../api/websocket.md) - Real-time features
 - [Docker Deployment](../deployment/docker.md) - Installation
 
----
+______________________________________________________________________
 
 **Enjoy your podcast management with Podgrab!** 🎧

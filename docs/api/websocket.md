@@ -4,7 +4,8 @@ Real-time communication API for Podgrab using WebSocket protocol.
 
 ## Overview
 
-Podgrab uses WebSockets for real-time bidirectional communication between the web interface and server, primarily for:
+Podgrab uses WebSockets for real-time bidirectional communication between the
+web interface and server, primarily for:
 
 - Media player synchronization across browser tabs/windows
 - Download progress notifications
@@ -20,6 +21,7 @@ ws://localhost:8080/ws
 ```
 
 For HTTPS deployments:
+
 ```
 wss://your-domain.com/ws
 ```
@@ -61,11 +63,11 @@ All WebSocket messages use JSON format:
 
 ### Message Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `identifier` | string | Unique client identifier (UUID) |
-| `messageType` | string | Type of message (see below) |
-| `payload` | string | JSON-encoded payload (optional) |
+| Field         | Type   | Description                     |
+| ------------- | ------ | ------------------------------- |
+| `identifier`  | string | Unique client identifier (UUID) |
+| `messageType` | string | Type of message (see below)     |
+| `payload`     | string | JSON-encoded payload (optional) |
 
 ## Message Types
 
@@ -84,6 +86,7 @@ Register client connection and check for active player.
 ```
 
 **Server Response:**
+
 - `PlayerExists` if an active player is registered
 - `NoPlayer` if no player is active
 
@@ -100,6 +103,7 @@ Register this client as the active media player.
 ```
 
 **Effect:**
+
 - Registers client as the active player
 - Broadcasts `PlayerExists` to all connected clients
 
@@ -116,6 +120,7 @@ Send episodes to the active player for playback.
 ```
 
 **Payload Structure:**
+
 ```json
 {
   "itemIds": ["episode-uuid-1", "episode-uuid-2"],
@@ -125,14 +130,16 @@ Send episodes to the active player for playback.
 ```
 
 **Payload Options:**
+
 - `itemIds`: Array of specific episode IDs to enqueue
 - `podcastId`: Enqueue all episodes from a podcast
 - `tagIds`: Enqueue all episodes from podcasts with these tags
 
 **Server Behavior:**
+
 1. Parses payload to determine episodes
-2. Retrieves full episode data
-3. Sends `Enqueue` message to active player with episode array
+1. Retrieves full episode data
+1. Sends `Enqueue` message to active player with episode array
 
 ### Server to Client
 
@@ -149,6 +156,7 @@ Indicates an active player is registered.
 ```
 
 **Client Action:**
+
 - Show "Cast to Player" UI elements
 - Enable episode queueing functionality
 
@@ -165,6 +173,7 @@ Indicates no active player is registered.
 ```
 
 **Client Action:**
+
 - Hide "Cast to Player" UI elements
 - Disable episode queueing functionality
 
@@ -181,6 +190,7 @@ Notification that active player disconnected.
 ```
 
 **Client Action:**
+
 - Update UI to reflect no player available
 - Clear player-related state
 
@@ -199,6 +209,7 @@ Episodes to add to player queue.
 **Payload:** JSON array of episode objects
 
 **Player Action:**
+
 - Parse episode array
 - Add episodes to playback queue
 - Optionally start playback
@@ -239,10 +250,12 @@ sequenceDiagram
 When a WebSocket connection closes:
 
 1. **Player Connection**:
+
    - Removed from active players registry
    - `PlayerRemoved` message broadcast to all clients
 
-2. **Client Connection**:
+1. **Client Connection**:
+
    - Removed from active connections registry
    - No broadcast to other clients
 
@@ -439,7 +452,8 @@ ws.onmessage = (event) => {
 
 WebSocket connections inherit HTTP authentication:
 
-- If `PASSWORD` environment variable is set, WebSocket upgrade requires Basic Auth
+- If `PASSWORD` environment variable is set, WebSocket upgrade requires Basic
+  Auth
 - Credentials must be included in initial HTTP request
 - No separate WebSocket-level authentication
 
@@ -457,7 +471,8 @@ const ws = new WebSocket('ws://localhost:8080/ws', {
 });
 ```
 
-**Note:** Browser WebSocket API doesn't support custom headers. For authenticated connections, use authenticated HTTP session or query parameters.
+**Note:** Browser WebSocket API doesn't support custom headers. For
+authenticated connections, use authenticated HTTP session or query parameters.
 
 ### Data Validation
 
@@ -469,23 +484,24 @@ const ws = new WebSocket('ws://localhost:8080/ws', {
 
 ### Multi-Tab Playback Sync
 
-**Scenario:** User has podcast player open in one tab and browses episodes in another.
+**Scenario:** User has podcast player open in one tab and browses episodes in
+another.
 
 1. Tab A opens player and registers: `RegisterPlayer`
-2. Tab B registers and receives: `PlayerExists`
-3. User clicks "Play Now" in Tab B
-4. Tab B sends: `Enqueue` with episode IDs
-5. Tab A receives: `Enqueue` and starts playback
+1. Tab B registers and receives: `PlayerExists`
+1. User clicks "Play Now" in Tab B
+1. Tab B sends: `Enqueue` with episode IDs
+1. Tab A receives: `Enqueue` and starts playback
 
 ### Playback Handoff
 
 **Scenario:** User switches from mobile to desktop browser.
 
 1. Mobile player registers
-2. Desktop browser connects and sees `PlayerExists`
-3. User closes mobile browser
-4. Desktop receives `PlayerRemoved`
-5. Desktop can now register its own player
+1. Desktop browser connects and sees `PlayerExists`
+1. User closes mobile browser
+1. Desktop receives `PlayerRemoved`
+1. Desktop can now register its own player
 
 ### Download Progress (Future Enhancement)
 

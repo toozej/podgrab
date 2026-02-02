@@ -1,6 +1,7 @@
 # Database Schema
 
-This document provides detailed documentation of Podgrab's SQLite database schema, including tables, relationships, indexes, and constraints.
+This document provides detailed documentation of Podgrab's SQLite database
+schema, including tables, relationships, indexes, and constraints.
 
 ## Entity Relationship Diagram
 
@@ -102,21 +103,22 @@ erDiagram
 
 **Purpose**: Stores podcast (RSS feed) metadata
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | VARCHAR(36) | PRIMARY KEY | UUID identifier |
-| created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | NOT NULL | Last update timestamp |
-| deleted_at | TIMESTAMP | NULL | Soft delete timestamp (NULL = active) |
-| title | VARCHAR(255) | NOT NULL | Podcast name |
-| summary | TEXT | | Full description (HTML stripped) |
-| author | VARCHAR(255) | | Creator/author name |
-| image | VARCHAR(512) | | Cover image URL |
-| url | VARCHAR(512) | NOT NULL UNIQUE | RSS feed URL |
-| last_episode | TIMESTAMP | NULL | Most recent episode pub date |
-| is_paused | BOOLEAN | DEFAULT FALSE | Pause new downloads |
+| Column       | Type         | Constraints     | Description                           |
+| ------------ | ------------ | --------------- | ------------------------------------- |
+| id           | VARCHAR(36)  | PRIMARY KEY     | UUID identifier                       |
+| created_at   | TIMESTAMP    | NOT NULL        | Record creation timestamp             |
+| updated_at   | TIMESTAMP    | NOT NULL        | Last update timestamp                 |
+| deleted_at   | TIMESTAMP    | NULL            | Soft delete timestamp (NULL = active) |
+| title        | VARCHAR(255) | NOT NULL        | Podcast name                          |
+| summary      | TEXT         |                 | Full description (HTML stripped)      |
+| author       | VARCHAR(255) |                 | Creator/author name                   |
+| image        | VARCHAR(512) |                 | Cover image URL                       |
+| url          | VARCHAR(512) | NOT NULL UNIQUE | RSS feed URL                          |
+| last_episode | TIMESTAMP    | NULL            | Most recent episode pub date          |
+| is_paused    | BOOLEAN      | DEFAULT FALSE   | Pause new downloads                   |
 
 **Indexes**:
+
 - PRIMARY KEY on `id`
 - UNIQUE INDEX on `url`
 - INDEX on `deleted_at` (for soft delete queries)
@@ -124,6 +126,7 @@ erDiagram
 - INDEX on `last_episode` (for sorting)
 
 **Example Record**:
+
 ```sql
 INSERT INTO podcasts (id, title, url, author, is_paused)
 VALUES (
@@ -139,30 +142,31 @@ VALUES (
 
 **Purpose**: Stores individual podcast episodes
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | VARCHAR(36) | PRIMARY KEY | UUID identifier |
-| podcast_id | VARCHAR(36) | FOREIGN KEY | References podcasts(id) |
-| created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | NOT NULL | Last update timestamp |
-| deleted_at | TIMESTAMP | NULL | Soft delete timestamp |
-| title | VARCHAR(255) | NOT NULL | Episode title |
-| summary | TEXT | | Episode description |
-| episode_type | VARCHAR(50) | | full/trailer/bonus |
-| duration | INTEGER | | Duration in seconds |
-| pub_date | TIMESTAMP | NOT NULL | Publication date |
-| file_url | VARCHAR(1024) | NOT NULL | Original media URL |
-| guid | VARCHAR(512) | NOT NULL | Unique episode ID from RSS |
-| image | VARCHAR(512) | | Episode-specific image URL |
-| download_date | TIMESTAMP | NULL | When file was downloaded |
-| download_path | VARCHAR(512) | | Local file path |
-| download_status | INTEGER | DEFAULT 0 | 0/1/2/3 (see below) |
-| is_played | BOOLEAN | DEFAULT FALSE | User played status |
-| bookmark_date | TIMESTAMP | NULL | Bookmark timestamp |
-| local_image | VARCHAR(512) | | Local image file path |
-| file_size | BIGINT | DEFAULT 0 | File size in bytes |
+| Column          | Type          | Constraints   | Description                |
+| --------------- | ------------- | ------------- | -------------------------- |
+| id              | VARCHAR(36)   | PRIMARY KEY   | UUID identifier            |
+| podcast_id      | VARCHAR(36)   | FOREIGN KEY   | References podcasts(id)    |
+| created_at      | TIMESTAMP     | NOT NULL      | Record creation timestamp  |
+| updated_at      | TIMESTAMP     | NOT NULL      | Last update timestamp      |
+| deleted_at      | TIMESTAMP     | NULL          | Soft delete timestamp      |
+| title           | VARCHAR(255)  | NOT NULL      | Episode title              |
+| summary         | TEXT          |               | Episode description        |
+| episode_type    | VARCHAR(50)   |               | full/trailer/bonus         |
+| duration        | INTEGER       |               | Duration in seconds        |
+| pub_date        | TIMESTAMP     | NOT NULL      | Publication date           |
+| file_url        | VARCHAR(1024) | NOT NULL      | Original media URL         |
+| guid            | VARCHAR(512)  | NOT NULL      | Unique episode ID from RSS |
+| image           | VARCHAR(512)  |               | Episode-specific image URL |
+| download_date   | TIMESTAMP     | NULL          | When file was downloaded   |
+| download_path   | VARCHAR(512)  |               | Local file path            |
+| download_status | INTEGER       | DEFAULT 0     | 0/1/2/3 (see below)        |
+| is_played       | BOOLEAN       | DEFAULT FALSE | User played status         |
+| bookmark_date   | TIMESTAMP     | NULL          | Bookmark timestamp         |
+| local_image     | VARCHAR(512)  |               | Local image file path      |
+| file_size       | BIGINT        | DEFAULT 0     | File size in bytes         |
 
 **Download Status Enum**:
+
 ```go
 const (
     NotDownloaded DownloadStatus = 0  // Queued or not started
@@ -173,6 +177,7 @@ const (
 ```
 
 **Indexes**:
+
 - PRIMARY KEY on `id`
 - INDEX on `podcast_id` (foreign key)
 - INDEX on `guid, podcast_id` (uniqueness check)
@@ -180,6 +185,7 @@ const (
 - INDEX on `pub_date` (sorting)
 
 **Example Record**:
+
 ```sql
 INSERT INTO podcast_items (
     id, podcast_id, title, guid, file_url, pub_date, download_status
@@ -198,16 +204,17 @@ INSERT INTO podcast_items (
 
 **Purpose**: Organizational labels for podcasts
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | VARCHAR(36) | PRIMARY KEY | UUID identifier |
-| created_at | TIMESTAMP | NOT NULL | Record creation timestamp |
-| updated_at | TIMESTAMP | NOT NULL | Last update timestamp |
-| deleted_at | TIMESTAMP | NULL | Soft delete timestamp |
-| label | VARCHAR(100) | NOT NULL UNIQUE | Tag display name |
-| description | TEXT | | Tag description |
+| Column      | Type         | Constraints     | Description               |
+| ----------- | ------------ | --------------- | ------------------------- |
+| id          | VARCHAR(36)  | PRIMARY KEY     | UUID identifier           |
+| created_at  | TIMESTAMP    | NOT NULL        | Record creation timestamp |
+| updated_at  | TIMESTAMP    | NOT NULL        | Last update timestamp     |
+| deleted_at  | TIMESTAMP    | NULL            | Soft delete timestamp     |
+| label       | VARCHAR(100) | NOT NULL UNIQUE | Tag display name          |
+| description | TEXT         |                 | Tag description           |
 
 **Indexes**:
+
 - PRIMARY KEY on `id`
 - UNIQUE INDEX on `label`
 
@@ -215,17 +222,19 @@ INSERT INTO podcast_items (
 
 **Purpose**: Many-to-many relationship between podcasts and tags
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
+| Column     | Type        | Constraints | Description             |
+| ---------- | ----------- | ----------- | ----------------------- |
 | podcast_id | VARCHAR(36) | FOREIGN KEY | References podcasts(id) |
-| tag_id | VARCHAR(36) | FOREIGN KEY | References tags(id) |
+| tag_id     | VARCHAR(36) | FOREIGN KEY | References tags(id)     |
 
 **Constraints**:
+
 - PRIMARY KEY on `(podcast_id, tag_id)`
 - FOREIGN KEY `podcast_id` REFERENCES `podcasts(id)` ON DELETE CASCADE
 - FOREIGN KEY `tag_id` REFERENCES `tags(id)` ON DELETE CASCADE
 
 **Indexes**:
+
 - INDEX on `podcast_id`
 - INDEX on `tag_id`
 
@@ -233,23 +242,23 @@ INSERT INTO podcast_items (
 
 **Purpose**: Global application configuration (singleton table)
 
-| Column | Type | Default | Description |
-|--------|------|---------|-------------|
-| id | VARCHAR(36) | | UUID (only 1 record) |
-| created_at | TIMESTAMP | | Record creation |
-| updated_at | TIMESTAMP | | Last update |
-| download_on_add | BOOLEAN | TRUE | Auto-download when adding podcast |
-| initial_download_count | INTEGER | 5 | Episodes to download initially |
-| auto_download | BOOLEAN | TRUE | Auto-download new episodes |
-| append_date_to_filename | BOOLEAN | FALSE | Add date prefix to files |
-| append_episode_number_to_filename | BOOLEAN | FALSE | Add episode number to files |
-| dark_mode | BOOLEAN | FALSE | UI dark mode |
-| download_episode_images | BOOLEAN | FALSE | Download episode artwork |
-| generate_nfo_file | BOOLEAN | FALSE | Generate NFO files |
-| dont_download_deleted_from_disk | BOOLEAN | FALSE | Skip re-download if deleted |
-| base_url | VARCHAR(512) | | Base URL for links |
-| max_download_concurrency | INTEGER | 5 | Max parallel downloads |
-| user_agent | VARCHAR(512) | | HTTP User-Agent |
+| Column                            | Type         | Default | Description                       |
+| --------------------------------- | ------------ | ------- | --------------------------------- |
+| id                                | VARCHAR(36)  |         | UUID (only 1 record)              |
+| created_at                        | TIMESTAMP    |         | Record creation                   |
+| updated_at                        | TIMESTAMP    |         | Last update                       |
+| download_on_add                   | BOOLEAN      | TRUE    | Auto-download when adding podcast |
+| initial_download_count            | INTEGER      | 5       | Episodes to download initially    |
+| auto_download                     | BOOLEAN      | TRUE    | Auto-download new episodes        |
+| append_date_to_filename           | BOOLEAN      | FALSE   | Add date prefix to files          |
+| append_episode_number_to_filename | BOOLEAN      | FALSE   | Add episode number to files       |
+| dark_mode                         | BOOLEAN      | FALSE   | UI dark mode                      |
+| download_episode_images           | BOOLEAN      | FALSE   | Download episode artwork          |
+| generate_nfo_file                 | BOOLEAN      | FALSE   | Generate NFO files                |
+| dont_download_deleted_from_disk   | BOOLEAN      | FALSE   | Skip re-download if deleted       |
+| base_url                          | VARCHAR(512) |         | Base URL for links                |
+| max_download_concurrency          | INTEGER      | 5       | Max parallel downloads            |
+| user_agent                        | VARCHAR(512) |         | HTTP User-Agent                   |
 
 **Note**: Only one row should exist. Created automatically on first app start.
 
@@ -257,31 +266,32 @@ INSERT INTO podcast_items (
 
 **Purpose**: Prevent duplicate background job execution
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | VARCHAR(36) | PRIMARY KEY | UUID identifier |
-| created_at | TIMESTAMP | NOT NULL | Record creation |
-| date | TIMESTAMP | NOT NULL | Lock acquisition time |
-| name | VARCHAR(100) | NOT NULL UNIQUE | Job identifier |
-| duration | INTEGER | | Lock duration (minutes) |
+| Column     | Type         | Constraints     | Description             |
+| ---------- | ------------ | --------------- | ----------------------- |
+| id         | VARCHAR(36)  | PRIMARY KEY     | UUID identifier         |
+| created_at | TIMESTAMP    | NOT NULL        | Record creation         |
+| date       | TIMESTAMP    | NOT NULL        | Lock acquisition time   |
+| name       | VARCHAR(100) | NOT NULL UNIQUE | Job identifier          |
+| duration   | INTEGER      |                 | Lock duration (minutes) |
 
 **Lock Pattern**:
+
 1. Job attempts to INSERT lock record
-2. If INSERT succeeds → job executes
-3. If INSERT fails (duplicate name) → job skips
-4. Job deletes lock on completion
-5. Stale locks cleaned by `UnlockMissedJobs()`
+1. If INSERT succeeds → job executes
+1. If INSERT fails (duplicate name) → job skips
+1. Job deletes lock on completion
+1. Stale locks cleaned by `UnlockMissedJobs()`
 
 ### migrations
 
 **Purpose**: Track database schema migrations
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | VARCHAR(36) | PRIMARY KEY | UUID identifier |
-| created_at | TIMESTAMP | NOT NULL | Record creation |
-| date | TIMESTAMP | NOT NULL | Migration execution time |
-| name | VARCHAR(255) | NOT NULL UNIQUE | Migration identifier |
+| Column     | Type         | Constraints     | Description              |
+| ---------- | ------------ | --------------- | ------------------------ |
+| id         | VARCHAR(36)  | PRIMARY KEY     | UUID identifier          |
+| created_at | TIMESTAMP    | NOT NULL        | Record creation          |
+| date       | TIMESTAMP    | NOT NULL        | Migration execution time |
+| name       | VARCHAR(255) | NOT NULL UNIQUE | Migration identifier     |
 
 ## Relationships
 
@@ -300,6 +310,7 @@ graph LR
 ```
 
 **Query**: Get all episodes for a podcast
+
 ```sql
 SELECT * FROM podcast_items
 WHERE podcast_id = '550e8400-e29b-41d4-a716-446655440000'
@@ -342,6 +353,7 @@ graph TD
 ```
 
 **Query**: Get all podcasts with "Tech" tag
+
 ```sql
 SELECT p.* FROM podcasts p
 INNER JOIN podcast_tags pt ON p.id = pt.podcast_id
@@ -405,10 +417,12 @@ LIMIT 10;
 ### Soft Deletes
 
 All main tables use soft deletes via `deleted_at`:
+
 - NULL = active record
 - NOT NULL = logically deleted
 
 **Always include in queries**:
+
 ```sql
 WHERE deleted_at IS NULL
 ```
@@ -416,9 +430,10 @@ WHERE deleted_at IS NULL
 ### Cascade Deletes
 
 When deleting podcasts:
+
 1. Set `podcast_items.deleted_at` for all episodes
-2. Delete from `podcast_tags` join table
-3. Set `podcasts.deleted_at`
+1. Delete from `podcast_tags` join table
+1. Set `podcasts.deleted_at`
 
 Actual files remain until explicitly deleted via "Delete Files" action.
 
@@ -434,12 +449,14 @@ Actual files remain until explicitly deleted via "Delete Files" action.
 ### Query Optimization
 
 **Fast Queries** (indexed):
+
 - Get podcast by ID
 - Get episodes by podcast_id
 - Get episodes by download_status
 - Sort by created_at, pub_date, last_episode
 
 **Slower Queries** (full scan):
+
 - Search podcast titles (LIKE)
 - Search episode summaries (LIKE)
 - Complex tag filtering
@@ -447,11 +464,13 @@ Actual files remain until explicitly deleted via "Delete Files" action.
 ### Database Size Estimation
 
 **Typical Podcast**:
+
 - 1 Podcast record: ~1 KB
 - 100 Episodes: ~50 KB
 - Total: ~51 KB
 
 **Large Collection (100 podcasts, 10,000 episodes)**:
+
 - Database size: ~5-10 MB
 - Add indexes: ~2-5 MB
 - Total: ~10-15 MB
@@ -461,12 +480,14 @@ SQLite performs well with databases up to several GB.
 ## Backup Strategy
 
 **Automated Backups**:
+
 - Frequency: Every 2 days (configurable via `CHECK_FREQUENCY`)
 - Location: `{CONFIG}/backups/`
 - Format: SQLite database file copy
 - Retention: Manual cleanup required
 
 **Manual Backup**:
+
 ```bash
 sqlite3 /config/podgrab.db ".backup /config/backups/manual-backup.db"
 ```
@@ -474,6 +495,7 @@ sqlite3 /config/podgrab.db ".backup /config/backups/manual-backup.db"
 ## Migration Strategy
 
 **Current Approach**: GORM AutoMigrate
+
 - Runs on application startup
 - Adds new columns/tables automatically
 - Does NOT remove columns (safe)
@@ -488,6 +510,7 @@ sqlite3 /config/podgrab.db ".backup /config/backups/manual-backup.db"
 - [Data Flow](data-flow.md) - Request flows
 - [REST API](../api/rest-api.md) - API endpoints
 
----
+______________________________________________________________________
 
-**Next Steps**: Review [REST API Documentation](../api/rest-api.md) for endpoint details.
+**Next Steps**: Review [REST API Documentation](../api/rest-api.md) for endpoint
+details.

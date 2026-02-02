@@ -10,7 +10,9 @@ All API requests are relative to your Podgrab installation's base URL:
 http://localhost:8080
 ```
 
-If you've configured a `PASSWORD` environment variable, all endpoints require HTTP Basic Authentication:
+If you've configured a `PASSWORD` environment variable, all endpoints require
+HTTP Basic Authentication:
+
 - Username: `podgrab`
 - Password: `<your configured password>`
 
@@ -30,10 +32,12 @@ GET /podcasts
 ```
 
 **Query Parameters:**
+
 - `sort` (optional): Sort field - `dateadded`, `name`, `lastepisode`
 - `order` (optional): Sort order - `asc` or `desc`
 
 **Response:**
+
 ```json
 [
   {
@@ -58,6 +62,7 @@ GET /podcasts
 ```
 
 **Example:**
+
 ```bash
 curl http://localhost:8080/podcasts?sort=name&order=asc
 ```
@@ -70,6 +75,7 @@ Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "url": "https://example.com/feed.rss"
@@ -77,6 +83,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "id": "uuid",
@@ -90,10 +97,12 @@ Content-Type: application/json
 ```
 
 **Error Responses:**
+
 - `409 Conflict`: Podcast already exists
 - `400 Bad Request`: Invalid RSS feed URL
 
 **Example:**
+
 ```bash
 curl -X POST http://localhost:8080/podcasts \
   -H "Content-Type: application/json" \
@@ -107,6 +116,7 @@ GET /podcasts/:id
 ```
 
 **Response:**
+
 ```json
 {
   "id": "uuid",
@@ -126,7 +136,8 @@ GET /podcasts/:id
 GET /podcasts/:id/image
 ```
 
-Returns the podcast cover image. Redirects to original URL if local copy doesn't exist.
+Returns the podcast cover image. Redirects to original URL if local copy doesn't
+exist.
 
 **Response:** Image file (JPEG/PNG)
 
@@ -156,7 +167,8 @@ Deletes podcast database record but preserves downloaded episode files.
 DELETE /podcasts/:id/items
 ```
 
-Deletes all episode files and database records for a podcast, but keeps the podcast itself.
+Deletes all episode files and database records for a podcast, but keeps the
+podcast itself.
 
 **Response:** HTTP 204 No Content
 
@@ -169,6 +181,7 @@ GET /podcasts/:id/pause
 Pauses automatic episode downloads for this podcast.
 
 **Response:**
+
 ```json
 {}
 ```
@@ -182,6 +195,7 @@ GET /podcasts/:id/unpause
 Resumes automatic episode downloads for this podcast.
 
 **Response:**
+
 ```json
 {}
 ```
@@ -193,6 +207,7 @@ GET /podcasts/:id/items
 ```
 
 **Response:**
+
 ```json
 [
   {
@@ -226,6 +241,7 @@ GET /podcasts/:id/download
 Queues all episodes in the podcast for download.
 
 **Response:**
+
 ```json
 {}
 ```
@@ -249,6 +265,7 @@ GET /podcastitems
 ```
 
 **Query Parameters:**
+
 - `page` (default: 1): Page number
 - `count` (default: 10): Items per page
 - `podcastId` (optional): Filter by podcast ID
@@ -262,6 +279,7 @@ GET /podcastitems
   - `duration_desc`: Duration descending
 
 **Response:**
+
 ```json
 {
   "podcastItems": [...],
@@ -286,6 +304,7 @@ GET /podcastitems/:id
 ```
 
 **Response:**
+
 ```json
 {
   "id": "uuid",
@@ -307,7 +326,8 @@ GET /podcastitems/:id
 GET /podcastitems/:id/image
 ```
 
-Returns the episode artwork. Redirects to original URL if local copy doesn't exist.
+Returns the episode artwork. Redirects to original URL if local copy doesn't
+exist.
 
 **Response:** Image file (JPEG/PNG)
 
@@ -317,11 +337,13 @@ Returns the episode artwork. Redirects to original URL if local copy doesn't exi
 GET /podcastitems/:id/file
 ```
 
-Downloads or streams the episode audio file. Redirects to original URL if not downloaded locally.
+Downloads or streams the episode audio file. Redirects to original URL if not
+downloaded locally.
 
 **Response:** Audio file (MP3/M4A/etc.)
 
 **Headers:**
+
 - `Content-Description: File Transfer`
 - `Content-Transfer-Encoding: binary`
 - `Content-Disposition: attachment; filename=<filename>`
@@ -336,6 +358,7 @@ GET /podcastitems/:id/download
 Queues episode for download.
 
 **Response:**
+
 ```json
 {}
 ```
@@ -349,6 +372,7 @@ GET /podcastitems/:id/delete
 Deletes the downloaded episode file and updates database status.
 
 **Response:**
+
 ```json
 {}
 ```
@@ -401,6 +425,7 @@ Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "isPlayed": true,
@@ -409,6 +434,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "id": "uuid",
@@ -427,6 +453,7 @@ GET /tags
 ```
 
 **Response:**
+
 ```json
 [
   {
@@ -447,6 +474,7 @@ Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "label": "Technology",
@@ -455,6 +483,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "id": "uuid",
@@ -465,6 +494,7 @@ Content-Type: application/json
 ```
 
 **Error Responses:**
+
 - `409 Conflict`: Tag with this label already exists
 
 ### Get Tag by ID
@@ -474,6 +504,7 @@ GET /tags/:id
 ```
 
 **Response:**
+
 ```json
 {
   "id": "uuid",
@@ -500,6 +531,7 @@ POST /podcasts/:id/tags/:tagId
 Associates a tag with a podcast.
 
 **Response:**
+
 ```json
 {}
 ```
@@ -513,6 +545,7 @@ DELETE /podcasts/:id/tags/:tagId
 Removes tag association from podcast.
 
 **Response:**
+
 ```json
 {}
 ```
@@ -536,10 +569,12 @@ GET /search
 ```
 
 **Query Parameters:**
+
 - `q` (required): Search query
 - `searchSource` (required): `itunes` or `podcastindex`
 
 **Response:**
+
 ```json
 [
   {
@@ -554,6 +589,7 @@ GET /search
 ```
 
 **Example:**
+
 ```bash
 curl "http://localhost:8080/search?q=javascript&searchSource=itunes"
 ```
@@ -567,14 +603,18 @@ GET /opml
 ```
 
 **Query Parameters:**
-- `usePodgrabLink` (optional): Use Podgrab RSS URLs instead of original feed URLs (`true`/`false`, default: `false`)
+
+- `usePodgrabLink` (optional): Use Podgrab RSS URLs instead of original feed
+  URLs (`true`/`false`, default: `false`)
 
 **Response:** OPML XML file
 
 **Headers:**
+
 - `Content-Disposition: attachment; filename=podgrab-export.opml`
 
 **Example:**
+
 ```bash
 curl "http://localhost:8080/opml?usePodgrabLink=true" -o podcasts.opml
 ```
@@ -587,9 +627,11 @@ Content-Type: multipart/form-data
 ```
 
 **Form Data:**
+
 - `file`: OPML file
 
 **Response:**
+
 ```json
 {
   "success": "File uploaded"
@@ -597,6 +639,7 @@ Content-Type: multipart/form-data
 ```
 
 **Example:**
+
 ```bash
 curl -X POST http://localhost:8080/opml \
   -F "file=@podcasts.opml"
@@ -612,6 +655,7 @@ Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "downloadOnAdd": true,
@@ -630,6 +674,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Success"
@@ -654,12 +699,12 @@ Generates RSS feed containing all downloaded episodes from all podcasts.
 
 Episode download status enumeration:
 
-| Value | Status | Description |
-|-------|--------|-------------|
-| 0 | NotDownloaded | Episode not yet downloaded |
-| 1 | Downloading | Download in progress |
-| 2 | Downloaded | Successfully downloaded |
-| 3 | Deleted | Previously downloaded but file deleted |
+| Value | Status        | Description                            |
+| ----- | ------------- | -------------------------------------- |
+| 0     | NotDownloaded | Episode not yet downloaded             |
+| 1     | Downloading   | Download in progress                   |
+| 2     | Downloaded    | Successfully downloaded                |
+| 3     | Deleted       | Previously downloaded but file deleted |
 
 ### Episode Type
 
@@ -669,7 +714,8 @@ Episode download status enumeration:
 
 ## Rate Limiting
 
-No built-in rate limiting. Consider implementing at reverse proxy level for production deployments.
+No built-in rate limiting. Consider implementing at reverse proxy level for
+production deployments.
 
 ## Error Handling
 
@@ -702,7 +748,8 @@ See [WebSocket API](websocket.md) for real-time communication documentation.
 - File sizes are in bytes
 - Durations are in seconds
 - Some endpoints use GET for state-changing operations (legacy design)
-- Background operations (downloads, refreshes) return immediately and process asynchronously
+- Background operations (downloads, refreshes) return immediately and process
+  asynchronously
 
 ## Related Documentation
 

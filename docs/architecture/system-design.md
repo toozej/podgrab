@@ -1,22 +1,26 @@
 # System Design
 
-This document details Podgrab's system design, including architectural patterns, design decisions, and implementation strategies.
+This document details Podgrab's system design, including architectural patterns,
+design decisions, and implementation strategies.
 
 ## Design Principles
 
 ### 1. Simplicity Over Complexity
+
 - Monolithic architecture for easier deployment and maintenance
 - Minimal dependencies
 - Direct database access without caching layer
 - Server-side rendering over complex frontend framework
 
 ### 2. Fail-Safe Operations
+
 - Job locking prevents duplicate execution
 - Download verification before marking complete
 - Existing file detection to prevent re-downloads
 - Graceful handling of RSS feed failures
 
 ### 3. User Control
+
 - Extensive configuration options
 - Manual download control
 - Pause/unpause podcasts
@@ -130,6 +134,7 @@ graph LR
 ```
 
 **Implementation**: `db/dbfunctions.go`
+
 - `GetPodcastById(id, podcast)`
 - `GetAllPodcasts(podcasts, sorting)`
 - `AddOrUpdatePodcast(podcast)`
@@ -177,6 +182,7 @@ graph LR
 ```
 
 **Implementation**: `controllers/websockets.go`
+
 - `HandleWebsocketMessages()`: Hub goroutine
 - `Wshandler()`: Client connection handler
 - `SendMessage()`: Broadcast to all clients
@@ -313,7 +319,9 @@ sequenceDiagram
     end
 ```
 
-**Note**: GORM handles most transactions automatically. Explicit transactions used for:
+**Note**: GORM handles most transactions automatically. Explicit transactions
+used for:
+
 - Multi-podcast operations
 - OPML import (multiple podcasts)
 - Bulk episode updates
@@ -339,11 +347,13 @@ graph TD
 ```
 
 **Naming Convention**:
+
 ```
 [optional-date-prefix-][optional-episode-number-]sanitized-episode-title.mp3
 ```
 
 **Example**:
+
 - Without prefixes: `great-podcast-episode-title.mp3`
 - With date: `2024-01-15-great-podcast-episode-title.mp3`
 - With both: `2024-01-15-001-great-podcast-episode-title.mp3`
@@ -398,6 +408,7 @@ sequenceDiagram
 ```
 
 **Implementation**: `service/podcastService.go`
+
 - `CreateLock(name, duration)`: Acquire lock
 - `ReleaseLock(name)`: Release lock
 - `UnlockMissedJobs()`: Clean up stale locks
@@ -461,25 +472,27 @@ graph TD
 
 ### Error Recovery
 
-| Error Type | Strategy | User Impact |
-|------------|----------|-------------|
-| RSS Feed Fetch Failed | Log error, skip this refresh cycle | Podcast not updated until next cycle |
-| Episode Download Failed | Mark as `NotDownloaded`, retry on next job run | Episode remains in queue |
-| Database Connection Lost | Application restart required | Service interruption |
-| File Write Failed | Log error, mark episode as failed | Episode not available |
-| Parse Error | Log error, skip malformed item | Some episodes may not be added |
+| Error Type               | Strategy                                       | User Impact                          |
+| ------------------------ | ---------------------------------------------- | ------------------------------------ |
+| RSS Feed Fetch Failed    | Log error, skip this refresh cycle             | Podcast not updated until next cycle |
+| Episode Download Failed  | Mark as `NotDownloaded`, retry on next job run | Episode remains in queue             |
+| Database Connection Lost | Application restart required                   | Service interruption                 |
+| File Write Failed        | Log error, mark episode as failed              | Episode not available                |
+| Parse Error              | Log error, skip malformed item                 | Some episodes may not be added       |
 
 ## Caching Strategy
 
 **Current State**: No caching layer implemented
 
 **Rationale**:
+
 - SQLite is fast enough for read operations
 - Episode files cached on disk
 - RSS feeds refreshed on schedule (not real-time)
 - Low concurrent user count expected
 
 **Potential Future Caching**:
+
 ```mermaid
 graph LR
     Request[Request] --> Cache{In Cache?}
@@ -526,11 +539,13 @@ graph TD
 ### Database Concurrency
 
 **SQLite Limitations**:
+
 - Single writer at a time
 - Multiple readers allowed
 - Write lock blocks all operations
 
 **Mitigation**:
+
 - Short transactions
 - Optimistic locking via GORM
 - Job locking prevents duplicate writes
@@ -569,6 +584,7 @@ sequenceDiagram
 ```
 
 **Security Considerations**:
+
 - Basic Auth over HTTP is insecure (use reverse proxy with HTTPS)
 - No rate limiting (vulnerable to brute force)
 - No session management (credentials sent with every request)
@@ -596,6 +612,7 @@ graph TD
 ```
 
 **Sanitization Functions**:
+
 - `internal/sanitize/sanitize.go`: Path and filename sanitization
 - `bluemonday`: HTML sanitization
 - `html-strip-tags-go`: HTML tag removal
@@ -605,12 +622,14 @@ graph TD
 ### Database Queries
 
 **Optimizations Applied**:
+
 1. **Indexing**: Primary keys (UUIDs), foreign keys, timestamps
-2. **Eager Loading**: `Preload()` for podcast items and tags
-3. **Batch Operations**: Bulk inserts for episodes
-4. **Query Limits**: Pagination support (though not heavily used)
+1. **Eager Loading**: `Preload()` for podcast items and tags
+1. **Batch Operations**: Bulk inserts for episodes
+1. **Query Limits**: Pagination support (though not heavily used)
 
 **Query Patterns**:
+
 ```sql
 -- Efficient: Uses index on podcast_id
 SELECT * FROM podcast_items WHERE podcast_id = ?
@@ -625,6 +644,7 @@ SELECT * FROM podcasts WHERE title LIKE '%search%'
 ### File I/O
 
 **Optimizations**:
+
 - Streaming downloads (not loaded into memory)
 - Concurrent downloads with semaphore
 - Existing file detection (skip re-download)
@@ -635,6 +655,7 @@ SELECT * FROM podcasts WHERE title LIKE '%search%'
 **Approach**: Server-side rendering with minimal client JavaScript
 
 **Trade-offs**:
+
 - ✅ Lower client CPU usage
 - ✅ Works without JavaScript
 - ✅ Simpler codebase
@@ -643,14 +664,14 @@ SELECT * FROM podcasts WHERE title LIKE '%search%'
 
 ## Design Trade-offs
 
-| Decision | Advantages | Disadvantages |
-|----------|-----------|---------------|
-| SQLite vs PostgreSQL | Simple deployment, no separate DB server | Limited concurrency, no horizontal scaling |
-| Monolith vs Microservices | Simple deployment, easier development | All-or-nothing scaling, tight coupling |
-| Server-side templates vs SPA | SEO-friendly, simple | Less interactive, more server load |
-| Basic Auth vs OAuth | Simple setup | Less secure, limited features |
-| File storage vs S3 | No cloud dependency, lower cost | Not scalable, no CDN |
-| Scheduled jobs vs Message Queue | Simple implementation | Less reliable, no guaranteed execution |
+| Decision                        | Advantages                               | Disadvantages                              |
+| ------------------------------- | ---------------------------------------- | ------------------------------------------ |
+| SQLite vs PostgreSQL            | Simple deployment, no separate DB server | Limited concurrency, no horizontal scaling |
+| Monolith vs Microservices       | Simple deployment, easier development    | All-or-nothing scaling, tight coupling     |
+| Server-side templates vs SPA    | SEO-friendly, simple                     | Less interactive, more server load         |
+| Basic Auth vs OAuth             | Simple setup                             | Less secure, limited features              |
+| File storage vs S3              | No cloud dependency, lower cost          | Not scalable, no CDN                       |
+| Scheduled jobs vs Message Queue | Simple implementation                    | Less reliable, no guaranteed execution     |
 
 ## Related Documentation
 
@@ -659,6 +680,7 @@ SELECT * FROM podcasts WHERE title LIKE '%search%'
 - [Database Schema](database-schema.md) - Detailed schema
 - [Development Setup](../development/setup.md) - Development environment
 
----
+______________________________________________________________________
 
-**Next Steps**: Review [Data Flow](data-flow.md) for detailed request/response patterns.
+**Next Steps**: Review [Data Flow](data-flow.md) for detailed request/response
+patterns.

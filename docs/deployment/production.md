@@ -304,9 +304,9 @@ sudo certbot renew --dry-run
 If using Cloudflare:
 
 1. Set SSL/TLS mode to "Full (strict)"
-2. Enable "Always Use HTTPS"
-3. Enable "Automatic HTTPS Rewrites"
-4. Configure Origin Server Certificate
+1. Enable "Always Use HTTPS"
+1. Enable "Automatic HTTPS Rewrites"
+1. Configure Origin Server Certificate
 
 ## Storage Configuration
 
@@ -381,6 +381,7 @@ s3fs mybucket /mnt/s3 -o passwd_file=~/.passwd-s3fs,url=https://s3.example.com
 #### Podgrab Built-in Backups
 
 Automatic backups created every 2 days:
+
 ```
 /config/backups/podgrab_backup_YYYY.MM.DD
 ```
@@ -578,9 +579,9 @@ PRAGMA temp_store=MEMORY;
 #### Cloudflare
 
 1. Add site to Cloudflare
-2. Point DNS to your server
-3. Enable caching for `/assets` and `/webassets`
-4. Create Page Rule:
+1. Point DNS to your server
+1. Enable caching for `/assets` and `/webassets`
+1. Create Page Rule:
    - URL: `podgrab.example.com/assets/*`
    - Cache Level: Cache Everything
    - Edge Cache TTL: 1 month
@@ -601,6 +602,7 @@ location /assets {
 #### Concurrent Downloads
 
 In Podgrab settings:
+
 - **2 CPU cores**: MaxDownloadConcurrency = 3
 - **4 CPU cores**: MaxDownloadConcurrency = 5
 - **8+ CPU cores**: MaxDownloadConcurrency = 10
@@ -713,7 +715,8 @@ ignoreregex =
 
 ### Load Balancing (Read-Only)
 
-**Note:** Podgrab uses SQLite which doesn't support multiple writers. Read-only replicas possible:
+**Note:** Podgrab uses SQLite which doesn't support multiple writers. Read-only
+replicas possible:
 
 ```mermaid
 graph TB
@@ -732,6 +735,7 @@ graph TB
 ```
 
 **Limitations:**
+
 - Only primary can write
 - Replicas for serving media/reads only
 - Not true HA (primary is SPOF)
@@ -750,6 +754,7 @@ Standby: 192.168.1.101 (VIP: 192.168.1.10)
 ### Recovery Plan
 
 1. **Restore from backup:**
+
    ```bash
    # Stop current instance
    docker-compose down
@@ -761,12 +766,14 @@ Standby: 192.168.1.101 (VIP: 192.168.1.10)
    docker-compose up -d
    ```
 
-2. **Verify data:**
+1. **Verify data:**
+
    - Check podcast list
    - Verify episode downloads
    - Test playback
 
-3. **Re-sync if needed:**
+1. **Re-sync if needed:**
+
    - Refresh all podcasts
    - Re-download missing episodes
 
@@ -791,7 +798,8 @@ deploy:
 
 ### Horizontal Scaling (Not Supported)
 
-SQLite limitation prevents horizontal scaling. For very large deployments, consider:
+SQLite limitation prevents horizontal scaling. For very large deployments,
+consider:
 
 - Separate instances per podcast category
 - API proxy to multiple Podgrab instances

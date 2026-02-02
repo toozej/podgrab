@@ -1,12 +1,12 @@
 # Testing Guide
 
-Comprehensive testing guide for Podgrab. Note: Automated tests are currently not implemented - this is a priority area for contribution.
+Comprehensive testing guide for Podgrab. Note: Automated tests are currently not
+implemented - this is a priority area for contribution.
 
 ## Current Testing Status
 
-**Automated Tests:** ❌ None implemented
-**Manual Testing:** ✅ Required for all changes
-**Future Goal:** Comprehensive test coverage
+**Automated Tests:** ❌ None implemented **Manual Testing:** ✅ Required for all
+changes **Future Goal:** Comprehensive test coverage
 
 ## Manual Testing
 
@@ -55,12 +55,14 @@ https://feeds.feedburner.com/example
 ```
 
 **Expected Results:**
+
 - Podcast added successfully
 - Cover image downloaded
 - Episodes appear in podcast detail page
 - Auto-download triggered (if enabled)
 
 **Edge Cases:**
+
 - Invalid URL format
 - Non-existent feed
 - Duplicate podcast
@@ -81,6 +83,7 @@ https://feeds.feedburner.com/example
 ```
 
 **Test OPML File:**
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <opml version="2.0">
@@ -99,6 +102,7 @@ https://feeds.feedburner.com/example
 ```
 
 **Expected Results:**
+
 - All podcasts imported
 - No duplicates created
 - Progress indicator shown
@@ -107,9 +111,10 @@ https://feeds.feedburner.com/example
 #### Delete Podcast
 
 **Test Cases:**
+
 1. Delete podcast and all episodes
-2. Delete podcast, keep episodes
-3. Delete only episodes, keep podcast
+1. Delete podcast, keep episodes
+1. Delete only episodes, keep podcast
 
 ```
 Test 1: Full Delete
@@ -161,6 +166,7 @@ Test 3: Delete Episodes Only
 ```
 
 **Expected Results:**
+
 - Download starts immediately
 - Progress indicator updates
 - File saved with correct naming
@@ -180,6 +186,7 @@ Test 3: Delete Episodes Only
 ```
 
 **Verify:**
+
 - Concurrent limit enforced (default: 5)
 - Downloads complete successfully
 - No file corruption
@@ -238,6 +245,7 @@ Test 3: Delete Episodes Only
 ```
 
 **Edge Cases:**
+
 - Duplicate tag names
 - Empty label
 - Special characters
@@ -295,6 +303,7 @@ Test 3: Delete Episodes Only
 ```
 
 **Test Queries:**
+
 - Common term: "javascript"
 - Specific podcast: "syntax fm"
 - Special characters: "c++"
@@ -353,6 +362,7 @@ Test: Append Episode Number
 ```
 
 **Test Values:**
+
 - 1 (sequential)
 - 5 (default)
 - 10 (high)
@@ -423,6 +433,7 @@ Test: Append Episode Number
 ```
 
 **Test Scenarios:**
+
 - Tab A: Player, Tab B: Browse
 - Both tabs: Player
 - Player disconnect/reconnect
@@ -442,6 +453,7 @@ Test: Append Episode Number
 ```
 
 **Monitor:**
+
 ```bash
 docker logs -f podgrab | grep "Refresh"
 ```
@@ -484,6 +496,7 @@ docker logs -f podgrab | grep "Refresh"
 ```
 
 **Verify OPML:**
+
 ```xml
 <?xml version="1.0"?>
 <opml version="2.0">
@@ -551,6 +564,7 @@ ab -n 1000 -c 10 -A podgrab:password http://localhost:8080/podcasts
 ```
 
 **Metrics to Monitor:**
+
 - Requests per second
 - Time per request
 - Failed requests
@@ -635,6 +649,7 @@ Path Traversal:
 ### Browsers
 
 Test in:
+
 - Chrome (latest)
 - Firefox (latest)
 - Safari (latest)
@@ -643,6 +658,7 @@ Test in:
 - Chrome Mobile (Android)
 
 **Test:**
+
 - UI rendering
 - Audio playback
 - WebSocket connectivity
@@ -651,6 +667,7 @@ Test in:
 ### RSS Feed Formats
 
 **Test Various Feed Formats:**
+
 - Standard RSS 2.0
 - iTunes podcast extensions
 - Spotify podcast format
@@ -660,12 +677,14 @@ Test in:
 ### Docker Environments
 
 **Test Platforms:**
+
 - Docker Desktop (Mac/Windows)
 - Docker on Linux
 - Docker Compose
 - Kubernetes (advanced)
 
 **Test Architectures:**
+
 - amd64 (Intel/AMD)
 - arm64 (Raspberry Pi 4)
 - arm/v7 (Raspberry Pi 3)
@@ -675,6 +694,7 @@ Test in:
 ### Before Release
 
 **Checklist:**
+
 - [ ] All manual tests pass
 - [ ] No console errors
 - [ ] No broken links
@@ -764,20 +784,21 @@ test('add podcast workflow', async ({ page }) => {
 If you find bugs during testing:
 
 1. Check GitHub issues for duplicates
-2. Gather information:
+1. Gather information:
    - Steps to reproduce
    - Expected behavior
    - Actual behavior
    - Screenshots
    - Environment details
-3. Create detailed bug report
-4. Include logs if applicable
+1. Create detailed bug report
+1. Include logs if applicable
 
 ## Contributing Tests
 
 We welcome test contributions! See [Contributing Guide](contributing.md).
 
 Priority areas:
+
 - Unit tests for service layer
 - API integration tests
 - WebSocket tests

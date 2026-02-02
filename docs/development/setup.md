@@ -16,6 +16,7 @@ Complete guide for setting up a Podgrab development environment.
 #### Go
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt-get update
 sudo apt-get install golang-go
@@ -25,6 +26,7 @@ go version
 ```
 
 **macOS:**
+
 ```bash
 brew install go
 
@@ -33,6 +35,7 @@ go version
 ```
 
 **Manual Installation:**
+
 ```bash
 # Download from https://golang.org/dl/
 wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
@@ -53,11 +56,13 @@ go version
 #### Git
 
 **Ubuntu/Debian:**
+
 ```bash
 sudo apt-get install git
 ```
 
 **macOS:**
+
 ```bash
 brew install git
 ```
@@ -137,6 +142,7 @@ CHECK_FREQUENCY=30
 ```
 
 **Create directories:**
+
 ```bash
 mkdir -p /tmp/podgrab/config
 mkdir -p /tmp/podgrab/assets
@@ -156,6 +162,7 @@ go run main.go
 ```
 
 **Expected output:**
+
 ```
 Config Dir:  /tmp/podgrab/config
 Assets Dir:  /tmp/podgrab/assets
@@ -285,7 +292,8 @@ staticcheck ./...
 
 ## Testing
 
-**Note:** Podgrab currently has no automated tests. This is an area for contribution.
+**Note:** Podgrab currently has no automated tests. This is an area for
+contribution.
 
 ### Running Tests (Future)
 
@@ -398,9 +406,9 @@ Create `.vscode/launch.json`:
 ### GoLand/IntelliJ Configuration
 
 1. Run → Edit Configurations
-2. Add new Go Build configuration
-3. Set environment variables
-4. Run in debug mode (Shift+F9)
+1. Add new Go Build configuration
+1. Set environment variables
+1. Run in debug mode (Shift+F9)
 
 ### Delve Debugger (CLI)
 
@@ -449,9 +457,11 @@ curl -v -X POST http://localhost:8080/podcasts \
 
 ### Template Development
 
-Templates are in `client/` directory. Changes require server restart (or use Air for auto-reload).
+Templates are in `client/` directory. Changes require server restart (or use Air
+for auto-reload).
 
 **Template syntax:**
+
 ```html
 <!-- Accessing data -->
 {{ .title }}
@@ -476,6 +486,7 @@ Templates are in `client/` directory. Changes require server restart (or use Air
 ### Static Assets
 
 Located in `webassets/`:
+
 - CSS: `webassets/css/`
 - JavaScript: `webassets/js/`
 - Images: `webassets/images/`
@@ -487,6 +498,7 @@ Changes to static files don't require restart.
 Main JS file: `webassets/js/app.js`
 
 Key libraries:
+
 - Alpine.js for reactivity
 - Axios for HTTP requests
 
@@ -495,10 +507,10 @@ Key libraries:
 ### Add New API Endpoint
 
 1. **Define model** (`model/` or `db/`)
-2. **Create database function** (`db/dbfunctions.go`)
-3. **Add service logic** (`service/`)
-4. **Create controller** (`controllers/podcast.go`)
-5. **Register route** (`main.go`)
+1. **Create database function** (`db/dbfunctions.go`)
+1. **Add service logic** (`service/`)
+1. **Create controller** (`controllers/podcast.go`)
+1. **Register route** (`main.go`)
 
 **Example:**
 
@@ -592,6 +604,7 @@ defer pprof.StopCPUProfile()
 ```
 
 Analyze:
+
 ```bash
 go tool pprof cpu.prof
 (pprof) top
@@ -680,15 +693,16 @@ go mod tidy
 
 ## Contributing Workflow
 
-See [Contributing Guidelines](contributing.md) for detailed contribution process.
+See [Contributing Guidelines](contributing.md) for detailed contribution
+process.
 
 ### Quick Start
 
 1. Fork repository
-2. Create feature branch
-3. Make changes
-4. Test thoroughly
-5. Submit pull request
+1. Create feature branch
+1. Make changes
+1. Test thoroughly
+1. Submit pull request
 
 ## Related Documentation
 

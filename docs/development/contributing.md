@@ -1,12 +1,14 @@
 # Contributing Guidelines
 
-Thank you for considering contributing to Podgrab! This document provides guidelines and instructions for contributing.
+Thank you for considering contributing to Podgrab! This document provides
+guidelines and instructions for contributing.
 
 ## Code of Conduct
 
 ### Our Pledge
 
-We are committed to providing a welcoming and inspiring community for all. Please be respectful and constructive in all interactions.
+We are committed to providing a welcoming and inspiring community for all.
+Please be respectful and constructive in all interactions.
 
 ### Expected Behavior
 
@@ -83,10 +85,10 @@ Add any other context or screenshots about the feature request here.
 #### Before Submitting
 
 1. **Check existing PRs** to avoid duplicates
-2. **Discuss major changes** in an issue first
-3. **Follow coding standards** outlined below
-4. **Update documentation** if needed
-5. **Test your changes** thoroughly
+1. **Discuss major changes** in an issue first
+1. **Follow coding standards** outlined below
+1. **Update documentation** if needed
+1. **Test your changes** thoroughly
 
 #### Pull Request Process
 
@@ -108,6 +110,7 @@ git checkout -b feature/my-new-feature
 ```
 
 **Branch naming conventions:**
+
 - `feature/description` - New features
 - `bugfix/description` - Bug fixes
 - `docs/description` - Documentation changes
@@ -116,7 +119,7 @@ git checkout -b feature/my-new-feature
 
 3. **Make your changes**
 
-4. **Commit your changes**
+1. **Commit your changes**
 
 ```bash
 git add .
@@ -124,6 +127,7 @@ git commit -m "Add descriptive commit message"
 ```
 
 **Commit message format:**
+
 ```
 <type>: <subject>
 
@@ -133,6 +137,7 @@ git commit -m "Add descriptive commit message"
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -142,6 +147,7 @@ git commit -m "Add descriptive commit message"
 - `chore`: Build process or auxiliary tool changes
 
 **Example:**
+
 ```
 feat: Add support for Podcast Index search
 
@@ -448,7 +454,8 @@ function fetchPodcasts(callback) {
 
 ## Testing Requirements
 
-**Note:** Podgrab currently lacks automated tests. Contributions to add tests are highly welcome!
+**Note:** Podgrab currently lacks automated tests. Contributions to add tests
+are highly welcome!
 
 ### Manual Testing Checklist
 
@@ -508,6 +515,7 @@ Update relevant docs in `docs/`:
 ### README Updates
 
 Keep `README.md` up to date with:
+
 - New features
 - Configuration options
 - Breaking changes
@@ -517,16 +525,19 @@ Keep `README.md` up to date with:
 ### High Priority
 
 1. **Automated Testing**
+
    - Unit tests for services
    - Integration tests for API
    - E2E tests for critical paths
 
-2. **Code Quality**
+1. **Code Quality**
+
    - Refactor large functions
    - Reduce code duplication
    - Improve error handling
 
-3. **Documentation**
+1. **Documentation**
+
    - API documentation
    - Code comments
    - User guides
@@ -536,6 +547,7 @@ Keep `README.md` up to date with:
 Check GitHub issues labeled `enhancement` or `help wanted`.
 
 Popular feature requests:
+
 - Multi-user support
 - Mobile apps
 - Advanced search filters
@@ -555,9 +567,9 @@ See [Development Setup](setup.md) for detailed instructions.
 ### Code Review Process
 
 1. **Automated checks** run on PR submission
-2. **Maintainer review** (usually within 1 week)
-3. **Address feedback** if requested
-4. **Merge** once approved
+1. **Maintainer review** (usually within 1 week)
+1. **Address feedback** if requested
+1. **Merge** once approved
 
 ### Getting Help
 
@@ -578,15 +590,16 @@ Podgrab follows [Semantic Versioning](https://semver.org/):
 ### Release Checklist
 
 1. Update version in code
-2. Update CHANGELOG.md
-3. Create Git tag
-4. Build Docker images
-5. Create GitHub release
-6. Update documentation
+1. Update CHANGELOG.md
+1. Create Git tag
+1. Build Docker images
+1. Create GitHub release
+1. Update documentation
 
 ## Recognition
 
 Contributors are recognized in:
+
 - GitHub contributors page
 - Release notes
 - README.md (major contributions)
@@ -596,17 +609,18 @@ Contributors are recognized in:
 If you have questions about contributing:
 
 1. Check existing documentation
-2. Search GitHub issues
-3. Create a new issue with `question` label
+1. Search GitHub issues
+1. Create a new issue with `question` label
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the same license as the project (GPL v3).
+By contributing, you agree that your contributions will be licensed under the
+same license as the project (GPL v3).
 
 ## Thank You!
 
 Your contributions, no matter how small, are greatly appreciated!
 
----
+______________________________________________________________________
 
 **Happy Contributing! 🎉**

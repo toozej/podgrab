@@ -58,6 +58,7 @@ akhilrex/podgrab:develop       # Development branch
 ### Image Architecture
 
 Multi-architecture support:
+
 - `linux/amd64` - x86_64 (Intel/AMD)
 - `linux/arm64` - ARM 64-bit (Raspberry Pi 4, Apple Silicon)
 - `linux/arm/v7` - ARM 32-bit (Raspberry Pi 3)
@@ -75,6 +76,7 @@ Docker automatically pulls the correct architecture.
 ```
 
 **Contents:**
+
 - `podgrab.db` - SQLite database
 - `backups/` - Automatic database backups
 
@@ -89,13 +91,15 @@ Docker automatically pulls the correct architecture.
 ```
 
 **Contents:**
+
 - Downloaded podcast episodes
 - Episode artwork
 - Podcast cover images
 
 **Permissions:** Read/write required
 
-**Storage Sizing:** Plan for podcast library growth (episodes average 50-100 MB each)
+**Storage Sizing:** Plan for podcast library growth (episodes average 50-100 MB
+each)
 
 ### Volume Examples
 
@@ -188,6 +192,7 @@ environment:
 **Default:** `30` (minutes)
 
 **Jobs Affected:**
+
 - RSS feed refresh (every N minutes)
 - Missing episode downloads (every N minutes)
 - File verification (every N minutes)
@@ -195,12 +200,14 @@ environment:
 - Image downloads (every N minutes)
 
 **Recommendations:**
+
 - **Light usage:** 60 minutes
 - **Normal usage:** 30 minutes (default)
 - **Heavy usage:** 15 minutes
 - **Minimal load:** 120+ minutes
 
 **Trade-offs:**
+
 - Lower values: Faster new episode detection, higher CPU/network usage
 - Higher values: Lower resource usage, delayed episode discovery
 
@@ -276,6 +283,7 @@ services:
 ```
 
 **`.env` file:**
+
 ```
 PODGRAB_PASSWORD=mysecurepassword
 ```
@@ -519,11 +527,13 @@ Add to crontab:
 ### Container Won't Start
 
 **Check logs:**
+
 ```bash
 docker-compose logs podgrab
 ```
 
 **Common issues:**
+
 - Port 8080 already in use
 - Volume permissions incorrect
 - Invalid environment variables
@@ -531,6 +541,7 @@ docker-compose logs podgrab
 ### Permission Errors
 
 **Fix volume permissions:**
+
 ```bash
 sudo chown -R 1000:1000 ./config ./data
 ```
@@ -544,17 +555,20 @@ sudo chown -R 1000:1000 ./config ./data
 **Cause:** Multiple instances accessing same database
 
 **Solution:**
+
 - Ensure only one container per config volume
 - Check for stale lock files: `rm ./config/*.db-shm ./config/*.db-wal`
 
 ### Out of Disk Space
 
 **Check usage:**
+
 ```bash
 docker system df
 ```
 
 **Clean up:**
+
 ```bash
 # Remove unused images
 docker image prune -a
@@ -566,11 +580,13 @@ docker volume prune
 ### High Memory Usage
 
 **Monitor resources:**
+
 ```bash
 docker stats podgrab
 ```
 
 **Reduce memory:**
+
 - Lower `CHECK_FREQUENCY` to reduce concurrent operations
 - Decrease `MaxDownloadConcurrency` in settings
 - Add memory limits to docker-compose.yml
@@ -578,11 +594,13 @@ docker stats podgrab
 ### Network Issues
 
 **Test connectivity:**
+
 ```bash
 docker exec podgrab ping -c 3 google.com
 ```
 
 **DNS issues:**
+
 ```yaml
 dns:
   - 8.8.8.8
@@ -592,10 +610,12 @@ dns:
 ### WebSocket Connection Failed
 
 **Check reverse proxy configuration:**
+
 - Ensure WebSocket upgrade headers are forwarded
 - Verify `/ws` path is not blocked
 
 **Nginx example:**
+
 ```nginx
 location /ws {
     proxy_pass http://podgrab:8080/ws;
@@ -620,6 +640,7 @@ volumes:
 ### Adjust Download Concurrency
 
 In Podgrab settings, set `MaxDownloadConcurrency`:
+
 - **Low power devices:** 2-3
 - **Normal systems:** 5 (default)
 - **High performance:** 10+
@@ -639,6 +660,7 @@ deploy:
 ### Use HTTPS
 
 Always deploy with HTTPS in production:
+
 - Use reverse proxy (Nginx, Traefik, Caddy)
 - Obtain SSL certificate (Let's Encrypt)
 - Redirect HTTP to HTTPS
@@ -685,6 +707,7 @@ healthcheck:
 ### Log Management
 
 **Limit log size:**
+
 ```yaml
 logging:
   driver: "json-file"
@@ -694,6 +717,7 @@ logging:
 ```
 
 **View logs:**
+
 ```bash
 docker-compose logs -f --tail=100 podgrab
 ```
