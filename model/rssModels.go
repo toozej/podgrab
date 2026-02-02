@@ -2,7 +2,7 @@ package model
 
 import "encoding/xml"
 
-//PodcastData is
+// RssPodcastData represents the root RSS feed structure for podcast data
 type RssPodcastData struct {
 	XMLName    xml.Name   `xml:"rss"`
 	Text       string     `xml:",chardata"`

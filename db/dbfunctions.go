@@ -252,16 +252,16 @@ func GetEpisodeNumber(podcastItemId, podcastId string) (int, error) {
 	var id string
 	var sequence int
 	row := DB.Raw(`;With cte as(
-		SELECT 
-			id, 
-			RANK() OVER (ORDER BY pub_date) as sequence 
-		FROM 
+		SELECT
+			id,
+			RANK() OVER (ORDER BY pub_date) as sequence
+		FROM
 			podcast_items
 		WHERE
 			podcast_id=?
 	)
-	select * 
-	from cte 
+	select *
+	from cte
 	where id = ?
 	`, podcastId, podcastItemId).Row()
 	error := row.Scan(&id, &sequence)

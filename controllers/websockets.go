@@ -34,7 +34,7 @@ type Message struct {
 func Wshandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := wsupgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Println("Failed to set websocket upgrade: %+v", err)
+		fmt.Printf("Failed to set websocket upgrade: %+v\n", err)
 		return
 	}
 	defer conn.Close()
@@ -71,7 +71,7 @@ func HandleWebsocketMessages() {
 		switch msg.MessageType {
 		case "RegisterPlayer":
 			activePlayers[msg.Connection] = msg.Identifier
-			for connection, _ := range allConnections {
+			for connection := range allConnections {
 				connection.WriteJSON(Message{
 					Identifier:  msg.Identifier,
 					MessageType: "PlayerExists",
@@ -79,7 +79,7 @@ func HandleWebsocketMessages() {
 			}
 			fmt.Println("Player Registered")
 		case "PlayerRemoved":
-			for connection, _ := range allConnections {
+			for connection := range allConnections {
 				connection.WriteJSON(Message{
 					Identifier:  msg.Identifier,
 					MessageType: "NoPlayer",

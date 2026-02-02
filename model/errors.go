@@ -15,5 +15,5 @@ type TagAlreadyExistsError struct {
 }
 
 func (e *TagAlreadyExistsError) Error() string {
-	return fmt.Sprintf("Tag with this label already exists : " + e.Label)
+	return fmt.Sprintf("Tag with this label already exists : %s", e.Label)
 }
