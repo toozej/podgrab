@@ -370,8 +370,8 @@ func cleanString(s string, r *regexp.Regexp) string {
 	// Replace certain joining characters with a dash
 	s = separators.ReplaceAllString(s, "-")
 
-	// Remove all other unrecognised characters - NB we do allow any printable characters
-	//s = r.ReplaceAllString(s, "")
+	// Remove all other unrecognised characters
+	s = r.ReplaceAllString(s, "")
 
 	// Remove any multiple dashes caused by replacements above
 	s = dashes.ReplaceAllString(s, "-")

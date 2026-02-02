@@ -659,17 +659,23 @@
             }
                 return title
           },
+          // Utility function to safely parse and format dates
+          parseDate(dateString) {
+            if (!dateString) return null;
+            // Handle ISO 8601 format (YYYY-MM-DD or full timestamp)
+            // Extract date portion if full timestamp is provided
+            const datePart = dateString.includes('T') ? dateString.split('T')[0] : dateString.substr(0, 10);
+            return new Date(datePart + 'T00:00:00Z'); // Parse as UTC to avoid timezone issues
+          },
           getFormattedLastEpisodeDate(podcast){
-           const options={month:"short", day:"numeric", year:"numeric"}
-           //todo: this is a really dirty hack which needs to be fixed when we work on the episode page
-           var dt=new Date(Date.parse(podcast.LastEpisode.substr(0,10)));
-           return dt.toDateString()
+           if (!podcast.LastEpisode) return 'N/A';
+           const dt = this.parseDate(podcast.LastEpisode);
+           return dt ? dt.toDateString() : 'Invalid Date';
           },
           getFormattedDate(date){
-           const options={month:"short", day:"numeric", year:"numeric"}
-           //todo: this is a really dirty hack which needs to be fixed when we work on the episode page
-           var dt=new Date(Date.parse(date.substr(0,10)));
-           return dt.toDateString()
+           if (!date) return 'N/A';
+           const dt = this.parseDate(date);
+           return dt ? dt.toDateString() : 'Invalid Date';
           },
           downloadAllEpisodes(id) { downloadAllEpisodes(id);},
           deletePodcast(id){ deletePodcast(id,()=>{
