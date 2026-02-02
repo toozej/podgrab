@@ -123,7 +123,8 @@ echo ""
 create_backup() {
     local file=$1
     if [ "$CREATE_BACKUP" = true ] && [ "$DRY_RUN" = false ]; then
-        local backup_file="${file}.backup.$(date +%Y%m%d_%H%M%S)"
+        local backup_file
+        backup_file="${file}.backup.$(date +%Y%m%d_%H%M%S)"
         cp "$file" "$backup_file"
         echo -e "${GREEN}  ✓ Backup created: $backup_file${NC}"
     fi
@@ -398,6 +399,47 @@ update_docker_files() {
 }
 
 #########################################################################
+# Update Pre-commit Hooks
+#########################################################################
+update_precommit_hooks() {
+    echo -e "${BLUE}═══════════════════════════════════════════${NC}"
+    echo -e "${BLUE}Updating Pre-commit Hooks${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════════${NC}"
+    echo ""
+
+    if [ ! -f ".pre-commit-config.yaml" ]; then
+        echo -e "${YELLOW}No .pre-commit-config.yaml found, skipping${NC}"
+        return 0
+    fi
+
+    # Check if pre-commit is installed
+    if ! command -v pre-commit &> /dev/null; then
+        echo -e "${YELLOW}pre-commit not installed, skipping${NC}"
+        echo -e "${YELLOW}Install with: pip install pre-commit${NC}"
+        return 0
+    fi
+
+    echo -e "${YELLOW}Updating pre-commit hooks...${NC}"
+    create_backup ".pre-commit-config.yaml"
+
+    if [ "$DRY_RUN" = true ]; then
+        echo -e "${YELLOW}[DRY RUN] Would update pre-commit hooks${NC}"
+    else
+        # Update hooks with frozen versions
+        echo -e "Running: pre-commit autoupdate --freeze"
+        if pre-commit autoupdate --freeze; then
+            echo -e "${GREEN}✓ Pre-commit hooks updated${NC}"
+        else
+            echo -e "${YELLOW}Warning: Some hooks may not have updated${NC}"
+        fi
+    fi
+    echo ""
+}
+
+#########################################################################
+# Main Execution
+#########################################################################
+#########################################################################
 # Main Execution
 #########################################################################
 
@@ -415,6 +457,9 @@ fi
 if [ "$UPDATE_DOCKER" = true ]; then
     update_docker_files
 fi
+
+# Update pre-commit hooks
+update_precommit_hooks
 
 echo -e "${BLUE}═══════════════════════════════════════════${NC}"
 echo -e "${GREEN}✓ Update process complete!${NC}"
