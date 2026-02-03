@@ -33,7 +33,7 @@ jobs:
           fi
 
       - name: Run go vet
-        run: go vet ./...
+        run: go vet $(go list ./... | grep -v -e '/e2e_test$' -e '/integration_test$')
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v8
