@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/akhilrex/podgrab/internal/logger"
 	"github.com/akhilrex/podgrab/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -455,7 +456,7 @@ func UnlockMissedJobs() {
 		var duration = time.Duration(job.Duration)
 		d := job.Date.Add(time.Minute * duration)
 		if d.Before(time.Now()) {
-			fmt.Println(job.Name + " is unlocked")
+			logger.Log.Debug(job.Name + " is unlocked")
 			Unlock(job.Name)
 		}
 	}

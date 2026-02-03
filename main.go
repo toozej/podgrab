@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"os"
 	"path"
 	"strconv"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/akhilrex/podgrab/controllers"
 	"github.com/akhilrex/podgrab/db"
+	"github.com/akhilrex/podgrab/internal/logger"
 	"github.com/akhilrex/podgrab/service"
 	"github.com/gin-contrib/location"
 	"github.com/gin-gonic/gin"
@@ -20,10 +20,12 @@ import (
 )
 
 func main() {
+	defer logger.Sync()
+
 	var err error
 	db.DB, err = db.Init()
 	if err != nil {
-		fmt.Println("statutes: ", err)
+		logger.Log.Errorw("Failed to initialize database", "error", err)
 	} else {
 		db.Migrate()
 	}
@@ -43,7 +45,7 @@ func main() {
 			return result
 		},
 		"removeStartingSlash": func(raw string) string {
-			fmt.Println(raw)
+			logger.Log.Debugw("Processing path", "path", raw)
 			if string(raw[0]) == "/" {
 				return raw
 			}
@@ -203,7 +205,7 @@ func main() {
 	go intiCron()
 
 	if err := r.Run(); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		logger.Log.Fatalw("Failed to start server", "error", err)
 	}
 }
 func setupSettings() gin.HandlerFunc {
@@ -220,33 +222,34 @@ func intiCron() {
 	checkFrequency, err := strconv.Atoi(os.Getenv("CHECK_FREQUENCY"))
 	if err != nil || checkFrequency <= 0 {
 		checkFrequency = 30
-		log.Print(err)
+		logger.Log.Warnw("Invalid CHECK_FREQUENCY, using default", "error", err, "default", 30)
 	}
 	freq := uint64(checkFrequency) //nolint:gosec // G115: Safe conversion - checkFrequency validated to be positive
 	service.UnlockMissedJobs()
 	if err := gocron.Every(freq).Minutes().Do(service.RefreshEpisodes); err != nil {
-		log.Printf("failed to schedule RefreshEpisodes: %v", err)
+		logger.Log.Errorw("Failed to schedule RefreshEpisodes", "error", err)
 	}
 	if err := gocron.Every(freq).Minutes().Do(service.CheckMissingFiles); err != nil {
-		log.Printf("failed to schedule CheckMissingFiles: %v", err)
+		logger.Log.Errorw("Failed to schedule CheckMissingFiles", "error", err)
 	}
 	if err := gocron.Every(freq * 2).Minutes().Do(service.UnlockMissedJobs); err != nil {
-		log.Printf("failed to schedule UnlockMissedJobs: %v", err)
+		logger.Log.Errorw("Failed to schedule UnlockMissedJobs", "error", err)
 	}
 	if err := gocron.Every(freq * 3).Minutes().Do(service.UpdateAllFileSizes); err != nil {
-		log.Printf("failed to schedule UpdateAllFileSizes: %v", err)
+		logger.Log.Errorw("Failed to schedule UpdateAllFileSizes", "error", err)
 	}
 	if err := gocron.Every(freq).Minutes().Do(service.DownloadMissingImages); err != nil {
-		log.Printf("failed to schedule DownloadMissingImages: %v", err)
+		logger.Log.Errorw("Failed to schedule DownloadMissingImages", "error", err)
 	}
 	if err := gocron.Every(2).Days().Do(service.CreateBackup); err != nil {
-		log.Printf("failed to schedule CreateBackup: %v", err)
+		logger.Log.Errorw("Failed to schedule CreateBackup", "error", err)
 	}
 	<-gocron.Start()
 }
 
 func assetEnv() {
-	log.Println("Config Dir: ", os.Getenv("CONFIG"))
-	log.Println("Assets Dir: ", os.Getenv("DATA"))
-	log.Println("Check Frequency (mins): ", os.Getenv("CHECK_FREQUENCY"))
+	logger.Log.Infow("Configuration",
+		"config_dir", os.Getenv("CONFIG"),
+		"assets_dir", os.Getenv("DATA"),
+		"check_frequency_mins", os.Getenv("CHECK_FREQUENCY"))
 }

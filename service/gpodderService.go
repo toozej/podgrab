@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/akhilrex/podgrab/internal/logger"
 	"github.com/akhilrex/podgrab/model"
 )
 
@@ -21,12 +22,12 @@ func Query(q string) []*model.CommonSearchResultModel {
 
 	body, err := makeQuery(searchURL)
 	if err != nil {
-		fmt.Printf("Error making query: %v\n", err)
+		logger.Log.Errorw("making query", "error", err)
 		return []*model.CommonSearchResultModel{}
 	}
 	var response []model.GPodcast
 	if err := json.Unmarshal(body, &response); err != nil {
-		fmt.Printf("Error unmarshaling response: %v\n", err)
+		logger.Log.Errorw("unmarshaling response", "error", err)
 	}
 
 	toReturn := make([]*model.CommonSearchResultModel, 0, len(response))
@@ -44,12 +45,12 @@ func ByTag(tag string, count int) []model.GPodcast {
 
 	body, err := makeQuery(tagURL)
 	if err != nil {
-		fmt.Printf("Error making query: %v\n", err)
+		logger.Log.Errorw("making query", "error", err)
 		return []model.GPodcast{}
 	}
 	var response []model.GPodcast
 	if err := json.Unmarshal(body, &response); err != nil {
-		fmt.Printf("Error unmarshaling response: %v\n", err)
+		logger.Log.Errorw("unmarshaling response", "error", err)
 	}
 	return response
 }
@@ -60,12 +61,12 @@ func Top(count int) []model.GPodcast {
 
 	body, err := makeQuery(topURL)
 	if err != nil {
-		fmt.Printf("Error making query: %v\n", err)
+		logger.Log.Errorw("making query", "error", err)
 		return []model.GPodcast{}
 	}
 	var response []model.GPodcast
 	if err := json.Unmarshal(body, &response); err != nil {
-		fmt.Printf("Error unmarshaling response: %v\n", err)
+		logger.Log.Errorw("unmarshaling response", "error", err)
 	}
 	return response
 }
@@ -76,12 +77,12 @@ func Tags(count int) []model.GPodcastTag {
 
 	body, err := makeQuery(tagsURL)
 	if err != nil {
-		fmt.Printf("Error making query: %v\n", err)
+		logger.Log.Errorw("making query", "error", err)
 		return []model.GPodcastTag{}
 	}
 	var response []model.GPodcastTag
 	if err := json.Unmarshal(body, &response); err != nil {
-		fmt.Printf("Error unmarshaling GPodder response: %v\n", err)
+		logger.Log.Errorw("unmarshaling GPodder response", "error", err)
 	}
 	return response
 }

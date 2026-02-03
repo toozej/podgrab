@@ -3,9 +3,9 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
+	"github.com/akhilrex/podgrab/internal/logger"
 	"gorm.io/gorm"
 )
 
@@ -25,7 +25,7 @@ var migrations = []localMigration{
 func RunMigrations() {
 	for _, mig := range migrations {
 		if err := ExecuteAndSaveMigration(mig.Name, mig.Query); err != nil {
-			fmt.Printf("Warning: migration '%s' failed: %v\n", mig.Name, err)
+			logger.Log.Warnw("migration '%s' failed", "error", mig.Name, err)
 		}
 	}
 }
@@ -35,7 +35,7 @@ func ExecuteAndSaveMigration(name, query string) error {
 	var migration Migration
 	result := DB.Where("name=?", name).First(&migration)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		fmt.Println(query)
+		logger.Log.Debug(query)
 		result = DB.Debug().Exec(query)
 		if result.Error == nil {
 			DB.Save(&Migration{

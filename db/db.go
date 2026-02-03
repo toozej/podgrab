@@ -3,12 +3,11 @@ package db
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
 
+	"github.com/akhilrex/podgrab/internal/logger"
 	"gorm.io/driver/sqlite"
-
 	"gorm.io/gorm"
 )
 
@@ -20,16 +19,16 @@ func Init() (*gorm.DB, error) {
 	// github.com/mattn/go-sqlite3
 	configPath := os.Getenv("CONFIG")
 	dbPath := path.Join(configPath, "podgrab.db")
-	log.Println(dbPath)
+	logger.Log.Info(dbPath)
 	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 	if err != nil {
-		fmt.Println("db err: ", err)
+		logger.Log.Debug("db err: ", err)
 		return nil, err
 	}
 
 	localDB, err := db.DB()
 	if err != nil {
-		fmt.Println("failed to get database connection: ", err)
+		logger.Log.Debug("failed to get database connection: ", err)
 	} else {
 		localDB.SetMaxIdleConns(10)
 	}
