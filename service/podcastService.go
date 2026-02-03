@@ -770,12 +770,10 @@ func RefreshEpisodes() error {
 		}
 	}
 
-	// Spawn background download (DownloadMissingEpisodes handles nil DB gracefully)
-	go func() {
-		if err := DownloadMissingEpisodes(); err != nil {
-			fmt.Printf("Error downloading missing episodes: %v\n", err)
-		}
-	}()
+	// Download missing episodes synchronously to avoid race conditions in tests
+	if err := DownloadMissingEpisodes(); err != nil {
+		fmt.Printf("Error downloading missing episodes: %v\n", err)
+	}
 
 	return nil
 }
