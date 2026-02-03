@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/akhilrex/podgrab/db"
+	applogger "github.com/akhilrex/podgrab/internal/logger"
 	"github.com/google/uuid"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -82,7 +83,7 @@ func CreateMockRSSHandler(rssContent string) http.Handler {
 		w.WriteHeader(http.StatusOK)
 		// Test server handler - log error if write fails
 		if _, err := w.Write([]byte(rssContent)); err != nil {
-			fmt.Printf("Error writing RSS response: %v\n", err)
+			applogger.Log.Errorw("Error writing RSS response", "error", err)
 		}
 	})
 }
@@ -95,7 +96,7 @@ func CreateMockFileHandler(content string) http.Handler {
 		w.WriteHeader(http.StatusOK)
 		// Test server handler - log error if write fails
 		if _, err := w.Write([]byte(content)); err != nil {
-			fmt.Printf("Error writing file response: %v\n", err)
+			applogger.Log.Errorw("Error writing file response", "error", err)
 		}
 	})
 }

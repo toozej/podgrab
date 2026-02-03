@@ -2,17 +2,16 @@ package controllers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path"
 	"strings"
 
+	"github.com/akhilrex/podgrab/db"
+	"github.com/akhilrex/podgrab/internal/logger"
 	"github.com/akhilrex/podgrab/model"
 	"github.com/akhilrex/podgrab/service"
 	"github.com/gin-contrib/location"
-
-	"github.com/akhilrex/podgrab/db"
 	"github.com/gin-gonic/gin"
 )
 
@@ -100,7 +99,7 @@ func GetPodcastByID(c *gin.Context) {
 		var podcast db.Podcast
 
 		err := db.GetPodcastByID(searchByIDQuery.ID, &podcast)
-		fmt.Println(err)
+		logger.Log.Error(err)
 		c.JSON(200, podcast)
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
@@ -205,7 +204,7 @@ func GetPodcastItemsByPodcastID(c *gin.Context) {
 		var podcastItems []db.PodcastItem
 
 		err := db.GetAllPodcastItemsByPodcastID(searchByIDQuery.ID, &podcastItems)
-		fmt.Println(err)
+		logger.Log.Error(err)
 		c.JSON(200, podcastItems)
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
@@ -218,10 +217,10 @@ func DownloadAllEpisodesByPodcastID(c *gin.Context) {
 
 	if c.ShouldBindUri(&searchByIDQuery) == nil {
 		err := service.SetAllEpisodesToDownload(searchByIDQuery.ID)
-		fmt.Println(err)
+		logger.Log.Error(err)
 		go func() {
 			if refreshErr := service.RefreshEpisodes(); refreshErr != nil {
-				fmt.Printf("Error refreshing episodes: %v\n", refreshErr)
+				logger.Log.Errorw("refreshing episodes", "error", refreshErr)
 			}
 		}()
 		c.JSON(200, gin.H{})
@@ -235,7 +234,7 @@ func GetAllPodcastItems(c *gin.Context) {
 	var filter model.EpisodesFilter
 	err := c.ShouldBindQuery(&filter)
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Log.Error(err.Error())
 	}
 	filter.VerifyPaginationValues()
 	if podcastItems, totalCount, err := db.GetPaginatedPodcastItemsNew(&filter); err == nil {
@@ -258,7 +257,7 @@ func GetPodcastItemByID(c *gin.Context) {
 		var podcast db.PodcastItem
 
 		err := db.GetPodcastItemByID(searchByIDQuery.ID, &podcast)
-		fmt.Println(err)
+		logger.Log.Error(err)
 		c.JSON(200, podcast)
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
@@ -338,7 +337,7 @@ func GetFileContentType(filePath string) string {
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
-			fmt.Printf("Error closing file: %v\n", err)
+			logger.Log.Errorw("closing file", "error", err)
 		}
 	}()
 	buffer := make([]byte, 512)
@@ -438,7 +437,7 @@ func DownloadPodcastItem(c *gin.Context) {
 	if c.ShouldBindUri(&searchByIDQuery) == nil {
 		go func() {
 			if downloadErr := service.DownloadSingleEpisode(searchByIDQuery.ID); downloadErr != nil {
-				fmt.Printf("Error downloading episode: %v\n", downloadErr)
+				logger.Log.Errorw("downloading episode", "error", downloadErr)
 			}
 		}()
 		c.JSON(200, gin.H{})
@@ -454,7 +453,7 @@ func DeletePodcastItem(c *gin.Context) {
 	if c.ShouldBindUri(&searchByIDQuery) == nil {
 		go func() {
 			if deleteErr := service.DeleteEpisodeFile(searchByIDQuery.ID); deleteErr != nil {
-				fmt.Printf("Error deleting episode file: %v\n", deleteErr)
+				logger.Log.Errorw("deleting episode file", "error", deleteErr)
 			}
 		}()
 		c.JSON(200, gin.H{})
@@ -472,7 +471,7 @@ func AddPodcast(c *gin.Context) {
 		if addErr == nil {
 			go func() {
 				if refreshErr := service.RefreshEpisodes(); refreshErr != nil {
-					fmt.Printf("Error refreshing episodes: %v\n", refreshErr)
+					logger.Log.Errorw("refreshing episodes", "error", refreshErr)
 				}
 			}()
 			c.JSON(200, pod)
@@ -480,12 +479,12 @@ func AddPodcast(c *gin.Context) {
 			if v, ok := addErr.(*model.PodcastAlreadyExistsError); ok {
 				c.JSON(409, gin.H{"message": v.Error()})
 			} else {
-				log.Println(addErr.Error())
+				logger.Log.Error(addErr.Error())
 				c.JSON(http.StatusBadRequest, gin.H{"message": addErr.Error()})
 			}
 		}
 	} else {
-		log.Println(err.Error())
+		logger.Log.Error(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 	}
 }
@@ -630,7 +629,7 @@ func GetRss(c *gin.Context) {
 	var items []db.PodcastItem
 
 	if err := db.GetAllPodcastItems(&items); err != nil {
-		fmt.Println(err.Error())
+		logger.Log.Error(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 	}
 
@@ -665,12 +664,12 @@ func AddTag(c *gin.Context) {
 			if v, ok := tagErr.(*model.TagAlreadyExistsError); ok {
 				c.JSON(409, gin.H{"message": v.Error()})
 			} else {
-				log.Println(tagErr.Error())
+				logger.Log.Error(tagErr.Error())
 				c.JSON(http.StatusBadRequest, gin.H{"message": tagErr.Error()})
 			}
 		}
 	} else {
-		log.Println(err.Error())
+		logger.Log.Error(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 	}
 }
@@ -720,7 +719,7 @@ func UpdateSetting(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, err)
 		}
 	} else {
-		fmt.Println(err.Error())
+		logger.Log.Error(err.Error())
 		c.JSON(http.StatusBadRequest, err)
 	}
 }

@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/akhilrex/podgrab/db"
+	"github.com/akhilrex/podgrab/internal/logger"
 	"github.com/akhilrex/podgrab/internal/sanitize"
 	stringy "github.com/gobeam/stringy"
 )
@@ -48,12 +49,12 @@ func Download(link, episodeTitle, podcastName, prefix string) (string, error) {
 
 	req, err := getRequest(link)
 	if err != nil {
-		Logger.Errorw("Error creating request: "+link, err)
+		logger.Log.Errorw("Error creating request: "+link, err)
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		Logger.Errorw("Error getting response: "+link, err)
+		logger.Log.Errorw("Error getting response: "+link, err)
 		return "", err
 	}
 
@@ -70,22 +71,22 @@ func Download(link, episodeTitle, podcastName, prefix string) (string, error) {
 
 	file, err := os.Create(cleanPath)
 	if err != nil {
-		Logger.Errorw("Error creating file"+link, err)
+		logger.Log.Errorw("Error creating file"+link, err)
 		return "", err
 	}
 	defer func() {
 		if closeErr := resp.Body.Close(); closeErr != nil {
-			Logger.Errorw("Error closing response body", closeErr)
+			logger.Log.Errorw("Error closing response body", closeErr)
 		}
 	}()
 	_, erra := io.Copy(file, resp.Body)
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
-			Logger.Errorw("Error closing file", closeErr)
+			logger.Log.Errorw("Error closing file", closeErr)
 		}
 	}()
 	if erra != nil {
-		Logger.Errorw("Error saving file"+link, err)
+		logger.Log.Errorw("Error saving file"+link, err)
 		return "", erra
 	}
 	changeOwnership(finalPath)
@@ -136,13 +137,13 @@ func DownloadPodcastCoverImage(link, podcastName string) (string, error) {
 	client := httpClient()
 	req, err := getRequest(link)
 	if err != nil {
-		Logger.Errorw("Error creating request: "+link, err)
+		logger.Log.Errorw("Error creating request: "+link, err)
 		return "", err
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		Logger.Errorw("Error getting response: "+link, err)
+		logger.Log.Errorw("Error getting response: "+link, err)
 		return "", err
 	}
 
@@ -164,22 +165,22 @@ func DownloadPodcastCoverImage(link, podcastName string) (string, error) {
 
 	file, err := os.Create(cleanPath)
 	if err != nil {
-		Logger.Errorw("Error creating file"+link, err)
+		logger.Log.Errorw("Error creating file"+link, err)
 		return "", err
 	}
 	defer func() {
 		if closeErr := resp.Body.Close(); closeErr != nil {
-			Logger.Errorw("Error closing response body", closeErr)
+			logger.Log.Errorw("Error closing response body", closeErr)
 		}
 	}()
 	_, erra := io.Copy(file, resp.Body)
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
-			Logger.Errorw("Error closing file", closeErr)
+			logger.Log.Errorw("Error closing file", closeErr)
 		}
 	}()
 	if erra != nil {
-		Logger.Errorw("Error saving file"+link, err)
+		logger.Log.Errorw("Error saving file"+link, err)
 		return "", erra
 	}
 	changeOwnership(finalPath)
@@ -194,13 +195,13 @@ func DownloadImage(link, episodeID, podcastName string) (string, error) {
 	client := httpClient()
 	req, err := getRequest(link)
 	if err != nil {
-		Logger.Errorw("Error creating request: "+link, err)
+		logger.Log.Errorw("Error creating request: "+link, err)
 		return "", err
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		Logger.Errorw("Error getting response: "+link, err)
+		logger.Log.Errorw("Error getting response: "+link, err)
 		return "", err
 	}
 
@@ -222,22 +223,22 @@ func DownloadImage(link, episodeID, podcastName string) (string, error) {
 
 	file, err := os.Create(cleanPath)
 	if err != nil {
-		Logger.Errorw("Error creating file"+link, err)
+		logger.Log.Errorw("Error creating file"+link, err)
 		return "", err
 	}
 	defer func() {
 		if closeErr := resp.Body.Close(); closeErr != nil {
-			Logger.Errorw("Error closing response body", closeErr)
+			logger.Log.Errorw("Error closing response body", closeErr)
 		}
 	}()
 	_, erra := io.Copy(file, resp.Body)
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
-			Logger.Errorw("Error closing file", closeErr)
+			logger.Log.Errorw("Error closing file", closeErr)
 		}
 	}()
 	if erra != nil {
-		Logger.Errorw("Error saving file"+link, err)
+		logger.Log.Errorw("Error saving file"+link, err)
 		return "", erra
 	}
 	changeOwnership(finalPath)
@@ -246,11 +247,11 @@ func DownloadImage(link, episodeID, podcastName string) (string, error) {
 func changeOwnership(filePath string) {
 	uid, err1 := strconv.Atoi(os.Getenv("PUID"))
 	gid, err2 := strconv.Atoi(os.Getenv("PGID"))
-	fmt.Println(filePath)
+	logger.Log.Debugw("Debug", "value", filePath)
 	if err1 == nil && err2 == nil {
-		fmt.Println(filePath + " : Attempting change")
+		logger.Log.Debugw("Debug", "value", filePath+" : Attempting change")
 		if err := os.Chown(filePath, uid, gid); err != nil {
-			fmt.Printf("Error changing ownership: %v\n", err)
+			logger.Log.Errorw("changing ownership", "error", err)
 		}
 	}
 }
@@ -303,9 +304,9 @@ func deleteOldBackup() {
 
 	toDelete := files[5:]
 	for _, file := range toDelete {
-		fmt.Println(file)
+		logger.Log.Debugw("Debug", "value", file)
 		if err := DeleteFile(file); err != nil {
-			fmt.Printf("Error deleting file %s: %v\n", file, err)
+			logger.Log.Errorw("deleting file %s", "error", file, err)
 		}
 	}
 }
@@ -323,7 +324,7 @@ func GetFileSizeFromURL(urlString string) (int64, error) {
 	}
 	defer func() {
 		if closeErr := resp.Body.Close(); closeErr != nil {
-			fmt.Printf("Error closing response body: %v\n", closeErr)
+			logger.Log.Errorw("closing response body", "error", closeErr)
 		}
 	}()
 
@@ -353,7 +354,7 @@ func CreateBackup() (string, error) {
 	}
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
-			fmt.Printf("Error closing file: %v\n", closeErr)
+			logger.Log.Errorw("closing file", "error", closeErr)
 		}
 	}()
 
@@ -365,14 +366,14 @@ func CreateBackup() (string, error) {
 	gzipWriter := gzip.NewWriter(file)
 	defer func() {
 		if closeErr := gzipWriter.Close(); closeErr != nil {
-			fmt.Printf("Error closing gzip writer: %v\n", closeErr)
+			logger.Log.Errorw("closing gzip writer", "error", closeErr)
 		}
 	}()
 
 	tarWriter := tar.NewWriter(gzipWriter)
 	defer func() {
 		if closeErr := tarWriter.Close(); closeErr != nil {
-			fmt.Printf("Error closing tar writer: %v\n", closeErr)
+			logger.Log.Errorw("closing tar writer", "error", closeErr)
 		}
 	}()
 
@@ -390,7 +391,7 @@ func addFileToTarWriter(filePath string, tarWriter *tar.Writer) error {
 	}
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
-			fmt.Printf("Error closing file: %v\n", closeErr)
+			logger.Log.Errorw("closing file", "error", closeErr)
 		}
 	}()
 
@@ -447,7 +448,7 @@ func createFolder(folder, parent string) string {
 	folderPath := path.Join(parent, folder)
 	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(folderPath, 0o750); err != nil {
-			fmt.Printf("Error creating folder: %v\n", err)
+			logger.Log.Errorw("creating folder", "error", err)
 		}
 		changeOwnership(folderPath)
 	}

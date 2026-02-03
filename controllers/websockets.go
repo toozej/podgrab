@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"sync"
 
+	"github.com/akhilrex/podgrab/internal/logger"
 	"github.com/gorilla/websocket"
 )
 
@@ -41,12 +41,12 @@ type Message struct {
 func Wshandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := wsupgrader.Upgrade(w, r, nil)
 	if err != nil {
-		fmt.Printf("Failed to set websocket upgrade: %+v\n", err)
+		logger.Log.Errorw("Failed to set websocket upgrade", "error", err)
 		return
 	}
 	defer func() {
 		if err := conn.Close(); err != nil {
-			fmt.Printf("Error closing websocket connection: %v\n", err)
+			logger.Log.Errorw("closing websocket connection", "error", err)
 		}
 	}()
 	for {
@@ -92,11 +92,11 @@ func HandleWebsocketMessages() {
 					Identifier:  msg.Identifier,
 					MessageType: "PlayerExists",
 				}); err != nil {
-					fmt.Printf("Error writing JSON to connection: %v\n", err)
+					logger.Log.Errorw("writing JSON to connection", "error", err)
 				}
 			}
 			connMutex.RUnlock()
-			fmt.Println("Player Registered")
+			logger.Log.Debug("Player registered")
 		case "PlayerRemoved":
 			connMutex.RLock()
 			for connection := range allConnections {
@@ -104,14 +104,14 @@ func HandleWebsocketMessages() {
 					Identifier:  msg.Identifier,
 					MessageType: "NoPlayer",
 				}); err != nil {
-					fmt.Printf("Error writing JSON to connection: %v\n", err)
+					logger.Log.Errorw("writing JSON to connection", "error", err)
 				}
 			}
 			connMutex.RUnlock()
-			fmt.Println("Player Registered")
+			logger.Log.Debug("Player registered")
 		case "Enqueue":
 			var payload EnqueuePayload
-			fmt.Println(msg.Payload)
+			logger.Log.Debugw("Received message payload", "payload", msg.Payload)
 			err := json.Unmarshal([]byte(msg.Payload), &payload)
 			if err == nil {
 				items := getItemsToPlay(payload.ItemIDs, payload.PodcastID, payload.TagIDs)
@@ -132,12 +132,12 @@ func HandleWebsocketMessages() {
 							MessageType: "Enqueue",
 							Payload:     string(payloadStr),
 						}); writeErr != nil {
-							fmt.Printf("Error writing JSON to connection: %v\n", writeErr)
+							logger.Log.Errorw("writing JSON to connection", "error", writeErr)
 						}
 					}
 				}
 			} else {
-				fmt.Println(err.Error())
+				logger.Log.Error(err.Error())
 			}
 		case "Register":
 			var player *websocket.Conn
@@ -151,19 +151,19 @@ func HandleWebsocketMessages() {
 			connMutex.RUnlock()
 
 			if player == nil {
-				fmt.Println("Player Not Exists")
+				logger.Log.Debug("Player not exists")
 				if err := msg.Connection.WriteJSON(Message{
 					Identifier:  msg.Identifier,
 					MessageType: "NoPlayer",
 				}); err != nil {
-					fmt.Printf("Error writing JSON to connection: %v\n", err)
+					logger.Log.Errorw("writing JSON to connection", "error", err)
 				}
 			} else {
 				if err := msg.Connection.WriteJSON(Message{
 					Identifier:  msg.Identifier,
 					MessageType: "PlayerExists",
 				}); err != nil {
-					fmt.Printf("Error writing JSON to connection: %v\n", err)
+					logger.Log.Errorw("writing JSON to connection", "error", err)
 				}
 			}
 		}

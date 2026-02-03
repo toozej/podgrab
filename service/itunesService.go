@@ -4,11 +4,11 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 
 	"github.com/TheHippo/podcastindex"
+	"github.com/akhilrex/podgrab/internal/logger"
 	"github.com/akhilrex/podgrab/model"
 )
 
@@ -30,12 +30,12 @@ func (service ItunesService) Query(q string) []*model.CommonSearchResultModel {
 
 	body, err := makeQuery(searchURL)
 	if err != nil {
-		fmt.Printf("Error making iTunes query: %v\n", err)
+		logger.Log.Errorw("making iTunes query", "error", err)
 		return []*model.CommonSearchResultModel{}
 	}
 	var response model.ItunesResponse
 	if err := json.Unmarshal(body, &response); err != nil {
-		fmt.Printf("Error unmarshaling iTunes response: %v\n", err)
+		logger.Log.Errorw("unmarshaling iTunes response", "error", err)
 	}
 
 	toReturn := make([]*model.CommonSearchResultModel, 0, len(response.Results))
@@ -84,7 +84,7 @@ func (service PodcastIndexService) Query(q string) []*model.CommonSearchResultMo
 	var toReturn []*model.CommonSearchResultModel
 	podcasts, err := c.Search(q)
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Log.Fatal(err.Error())
 		return toReturn
 	}
 

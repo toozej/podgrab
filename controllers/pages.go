@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/akhilrex/podgrab/db"
+	"github.com/akhilrex/podgrab/internal/logger"
 	"github.com/akhilrex/podgrab/model"
 	"github.com/akhilrex/podgrab/service"
 	"github.com/gin-gonic/gin"
@@ -135,7 +136,7 @@ func getItemsToPlay(itemIDs []string, podcastID string, tagIDs []string) []db.Po
 	case len(itemIDs) > 0:
 		toAdd, err := service.GetAllPodcastItemsByIDs(itemIDs)
 		if err != nil {
-			fmt.Printf("Error getting podcast items by IDs: %v\n", err)
+			logger.Log.Errorw("getting podcast items by IDs", "error", err)
 			return []db.PodcastItem{}
 		}
 		items = *toAdd
@@ -167,7 +168,7 @@ func PlayerPage(c *gin.Context) {
 	case hasItemIDs:
 		toAdd, err := service.GetAllPodcastItemsByIDs(itemIDs)
 		if err != nil {
-			fmt.Printf("Error getting podcast items by IDs: %v\n", err)
+			logger.Log.Errorw("getting podcast items by IDs", "error", err)
 			c.HTML(http.StatusInternalServerError, "error.html", gin.H{"error": "Failed to load items"})
 			return
 		}
@@ -197,7 +198,7 @@ func PlayerPage(c *gin.Context) {
 	default:
 		title = "Playing Latest Episodes"
 		if err := db.GetPaginatedPodcastItems(1, 20, nil, nil, time.Time{}, &items, &totalCount); err != nil {
-			fmt.Println(err.Error())
+			logger.Log.Error(err.Error())
 		}
 	}
 	setting, ok := c.MustGet("setting").(*db.Setting)
@@ -225,7 +226,7 @@ func SettingsPage(c *gin.Context) {
 	}
 	diskStats, err := db.GetPodcastEpisodeDiskStats()
 	if err != nil {
-		fmt.Printf("Error getting disk stats: %v\n", err)
+		logger.Log.Errorw("getting disk stats", "error", err)
 	}
 	c.HTML(http.StatusOK, "settings.html", gin.H{
 		"setting":   setting,
@@ -287,7 +288,7 @@ func AllEpisodesPage(c *gin.Context) {
 	var filter model.EpisodesFilter
 	// Use default filter values if binding fails
 	if err := c.ShouldBindQuery(&filter); err != nil {
-		fmt.Printf("Error binding query parameters: %v\n", err)
+		logger.Log.Errorw("binding query parameters", "error", err)
 	}
 	filter.VerifyPaginationValues()
 	setting, ok := c.MustGet("setting").(*db.Setting)
@@ -298,7 +299,7 @@ func AllEpisodesPage(c *gin.Context) {
 	podcasts := service.GetAllPodcasts("")
 	tags, err := db.GetAllTags("")
 	if err != nil {
-		fmt.Printf("Error getting all tags: %v\n", err)
+		logger.Log.Errorw("getting all tags", "error", err)
 		tags = &[]db.Tag{}
 	}
 	toReturn := gin.H{
@@ -321,7 +322,7 @@ func AllTagsPage(c *gin.Context) {
 	var page, count int
 	// Use default pagination values if binding fails
 	if err := c.ShouldBindQuery(&pagination); err != nil {
-		fmt.Printf("Error binding query parameters: %v\n", err)
+		logger.Log.Errorw("binding query parameters", "error", err)
 	}
 	if page = pagination.Page; page == 0 {
 		page = 1
@@ -412,7 +413,7 @@ func UploadOpml(c *gin.Context) {
 	}
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
-			fmt.Printf("Error closing file: %v\n", closeErr)
+			logger.Log.Errorw("closing file", "error", closeErr)
 		}
 	}()
 
@@ -440,7 +441,7 @@ func AddNewPodcast(c *gin.Context) {
 		if err == nil {
 			go func() {
 				if refreshErr := service.RefreshEpisodes(); refreshErr != nil {
-					fmt.Printf("Error refreshing episodes: %v\n", refreshErr)
+					logger.Log.Errorw("refreshing episodes", "error", refreshErr)
 				}
 			}()
 			c.Redirect(http.StatusFound, "/")
