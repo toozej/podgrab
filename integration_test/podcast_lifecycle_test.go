@@ -81,7 +81,7 @@ func TestPodcastLifecycle_AddDownloadDelete(t *testing.T) {
 	assert.NoError(t, err, "Downloaded file should exist")
 
 	// Step 4: Delete podcast
-	err = db.DeletePodcastById(podcast.ID)
+	err = db.DeletePodcastByID(podcast.ID)
 	require.NoError(t, err, "Should delete podcast")
 
 	// Verify podcast is deleted

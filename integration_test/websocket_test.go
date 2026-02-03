@@ -191,8 +191,8 @@ func TestWebSocket_EnqueueMessage(t *testing.T) {
 	defer clientConn.Close()
 
 	payload := controllers.EnqueuePayload{
-		ItemIds:   []string{"item1", "item2"},
-		PodcastId: "podcast1",
+		ItemIDs:   []string{"item1", "item2"},
+		PodcastID: "podcast1",
 	}
 	payloadJSON, _ := json.Marshal(payload)
 
