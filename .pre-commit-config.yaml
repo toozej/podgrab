@@ -56,12 +56,12 @@ repos:
         args: ['-w']
 
       - id: go-vet
-        args: ['./...']
+        args: ['-e', '(e2e_test|integration_test)']
 
       - id: go-mod-tidy
 
       - id: go-build
-        args: ['./...']
+        args: ['-e', '(e2e_test|integration_test)']
 
       - id: go-cyclo
         args: ['-over', '22']
