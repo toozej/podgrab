@@ -65,11 +65,12 @@ func TestMain(m *testing.M) {
 	defer testServer.Close()
 	testServerURL = testServer.URL
 
-	// Setup browser context with no-sandbox flags for CI environments
+	// Setup browser context optimized for CI environments
+	// Note: Using Chrome's SUID sandbox (via CHROME_DEVEL_SANDBOX env var)
+	// instead of --no-sandbox for better security on Ubuntu 24.04+
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.Flag("no-sandbox", true),
-		chromedp.Flag("disable-setuid-sandbox", true),
 		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("disable-gpu", true),
 	)
 	allocCtx, allocCancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer allocCancel()
