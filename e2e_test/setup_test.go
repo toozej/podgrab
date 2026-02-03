@@ -65,8 +65,16 @@ func TestMain(m *testing.M) {
 	defer testServer.Close()
 	testServerURL = testServer.URL
 
-	// Setup browser context
-	testBrowserCtx, cancel = chromedp.NewContext(context.Background())
+	// Setup browser context with no-sandbox flags for CI environments
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("disable-setuid-sandbox", true),
+		chromedp.Flag("disable-dev-shm-usage", true),
+	)
+	allocCtx, allocCancel := chromedp.NewExecAllocator(context.Background(), opts...)
+	defer allocCancel()
+
+	testBrowserCtx, cancel = chromedp.NewContext(allocCtx)
 	defer cancel()
 
 	// Run tests
