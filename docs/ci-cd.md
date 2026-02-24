@@ -27,7 +27,7 @@ build.yml (Main Orchestrator)
 │   ├── Run E2E tests (chromedp)
 │   └── Upload screenshots on failure
 │
-└── build-podgrab (Docker Build) [after tests, master only]
+└── build-podgrab (Docker Build) [after tests, main only]
     ├── Setup QEMU + Buildx
     ├── Configure build cache
     ├── Build multi-platform images
@@ -46,7 +46,7 @@ build.yml (Main Orchestrator)
 **Total**: ~25-30 minutes (tests run in parallel) **Docker Build**: Skipped on
 PRs
 
-### On Push to Master
+### On Push to Main
 
 1. **Code Quality** (10 min)
 1. **Tests + E2E** (25 min, parallel)
@@ -61,22 +61,22 @@ PRs
 
 **Triggers**:
 
-- Push to master
-- Pull requests to master
+- Push to main
+- Pull requests to main
 
 **Jobs**:
 
 1. `code-quality` - Calls code-quality.yml workflow
 1. `tests` - Calls test.yml workflow (needs: code-quality)
 1. `e2e-tests` - Calls e2e-test.yml workflow (needs: code-quality)
-1. `build-podgrab` - Docker build (needs: tests, e2e-tests, if: master)
+1. `build-podgrab` - Docker build (needs: tests, e2e-tests, if: main)
 1. `build-summary` - Status aggregation (needs: all, if: always)
 
 **Features**:
 
 - Workflow composition via `uses`
 - Parallel test execution
-- Conditional Docker build (master only)
+- Conditional Docker build (main only)
 - Build summary in GitHub Actions UI
 
 ### code-quality.yml - Pre-flight Gate
@@ -302,7 +302,7 @@ critical workflows **Artifacts**: Screenshots saved to /tmp/podgrab-e2e-\*.png
 - `akhilrex/podgrab:1.0.0`
 - `ghcr.io/akhilrex/podgrab:latest`
 - `ghcr.io/akhilrex/podgrab:1.0.0`
-- `akhilrex/podgrab:master-<sha>` (branch-sha format)
+- `akhilrex/podgrab:main-<sha>` (branch-sha format)
 
 **Cache Strategy**:
 
@@ -358,7 +358,7 @@ Comprehensive linter configuration with 20+ enabled linters:
 0:10 - E2E tests start
 0:25 - Tests complete
 0:35 - E2E tests complete
-0:35 - Docker build starts (master only)
+0:35 - Docker build starts (main only)
 1:05 - Docker build completes
 ```
 
@@ -372,7 +372,7 @@ Comprehensive linter configuration with 20+ enabled linters:
 1. **Parallelization**: Tests run in 4 parallel jobs
 1. **Smart Caching**: Go modules, build cache, Docker layers
 1. **Early Failure**: Code quality blocks everything
-1. **Selective Build**: Docker only on master
+1. **Selective Build**: Docker only on main
 
 ### Resource Usage
 
@@ -388,12 +388,12 @@ Comprehensive linter configuration with 20+ enabled linters:
 - Code quality: 10 min × 1 = 10 min
 - Tests: 15 min × 4 = 60 min
 - E2E: 25 min × 1 = 25 min
-- Docker: 30 min × 1 = 30 min (master only)
-- **Total**: 95 min (PR), 125 min (master)
+- Docker: 30 min × 1 = 30 min (main only)
+- **Total**: 95 min (PR), 125 min (main)
 
 ## Branch Protection
 
-Recommended settings for `master` branch:
+Recommended settings for `main` branch:
 
 **Required Status Checks**:
 

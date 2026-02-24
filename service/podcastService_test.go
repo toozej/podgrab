@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/akhilrex/podgrab/db"
-	testhelpers "github.com/akhilrex/podgrab/internal/testing"
-	"github.com/akhilrex/podgrab/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/toozej/podgrab/db"
+	testhelpers "github.com/toozej/podgrab/internal/testing"
+	"github.com/toozej/podgrab/model"
 )
 
 // TestParseOpml tests OPML file parsing.
@@ -151,6 +151,7 @@ func TestFetchURL(t *testing.T) {
 			// Create test HTTP server
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(tt.statusCode)
+				// nosemgrep: go.lang.security.audit.xss.no-direct-write-to-responsewriter
 				_, _ = w.Write([]byte(tt.feedContent)) // Test server - error handling not required
 			}))
 			defer server.Close()
@@ -275,49 +276,83 @@ func TestGetAllPodcasts(t *testing.T) {
 	assert.Equal(t, 2, found.AllEpisodesCount, "Should have correct total count")
 }
 
-// TestGetPodcastPrefix tests filename prefix generation.
-func TestGetPodcastPrefix(t *testing.T) {
+// TestFormatFileName tests filename format string processing.
+func TestFormatFileName(t *testing.T) {
 	pubDate := time.Date(2024, 1, 15, 10, 0, 0, 0, time.UTC)
 
 	tests := []struct {
-		name       string
-		setting    *db.Setting
-		wantPrefix string
+		name           string
+		formatString   string
+		item           *db.PodcastItem
+		wantContains   []string
+		wantNotContain []string
 	}{
 		{
-			name: "no_prefix",
-			setting: &db.Setting{
-				AppendDateToFileName:          false,
-				AppendEpisodeNumberToFileName: false,
+			name:         "episode_title_only",
+			formatString: "%EpisodeTitle%",
+			item: &db.PodcastItem{
+				Title:   "My Test Episode",
+				PubDate: pubDate,
+				Podcast: db.Podcast{Title: "Test Podcast"},
 			},
-			wantPrefix: "",
+			wantContains:   []string{"MyTestEpisode"},
+			wantNotContain: []string{},
 		},
 		{
-			name: "date_only",
-			setting: &db.Setting{
-				AppendDateToFileName:          true,
-				AppendEpisodeNumberToFileName: false,
+			name:         "episode_date",
+			formatString: "%EpisodeDate%-%EpisodeTitle%",
+			item: &db.PodcastItem{
+				Title:   "My Episode",
+				PubDate: pubDate,
+				Podcast: db.Podcast{Title: "Test Podcast"},
 			},
-			wantPrefix: "2024-01-15",
+			wantContains:   []string{"2024-01-15", "MyEpisode"},
+			wantNotContain: []string{},
+		},
+		{
+			name:         "date_components",
+			formatString: "%YYYY%-%mm%-%dd%-%EpisodeTitle%",
+			item: &db.PodcastItem{
+				Title:   "Episode",
+				PubDate: pubDate,
+				Podcast: db.Podcast{Title: "Podcast"},
+			},
+			wantContains:   []string{"2024", "01", "15", "Episode"},
+			wantNotContain: []string{},
+		},
+		{
+			name:         "show_title",
+			formatString: "%ShowTitle%-%EpisodeTitle%",
+			item: &db.PodcastItem{
+				Title:   "Episode",
+				PubDate: pubDate,
+				Podcast: db.Podcast{Title: "My Podcast"},
+			},
+			wantContains:   []string{"MyPodcast", "Episode"},
+			wantNotContain: []string{},
+		},
+		{
+			name:         "literal_percent",
+			formatString: "100%%-%EpisodeTitle%",
+			item: &db.PodcastItem{
+				Title:   "Episode",
+				PubDate: pubDate,
+				Podcast: db.Podcast{Title: "Podcast"},
+			},
+			wantContains:   []string{"100", "Episode"},
+			wantNotContain: []string{},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			item := &db.PodcastItem{
-				PodcastID: "test-podcast-id",
-				PubDate:   pubDate,
+			result := FormatFileName(tt.item, tt.formatString)
+
+			for _, want := range tt.wantContains {
+				assert.Contains(t, result, want, "Should contain expected string")
 			}
-
-			// Note: Episode number testing requires database setup, so we skip it here
-			// and only test date prefixing
-
-			prefix := GetPodcastPrefix(item, tt.setting)
-
-			if tt.wantPrefix == "" {
-				assert.Empty(t, prefix, "Should have no prefix")
-			} else {
-				assert.Contains(t, prefix, tt.wantPrefix, "Should contain expected prefix")
+			for _, notWant := range tt.wantNotContain {
+				assert.NotContains(t, result, notWant, "Should not contain string")
 			}
 		})
 	}
@@ -338,18 +373,19 @@ func TestUpdateSettings(t *testing.T) {
 
 	// Update settings
 	err := UpdateSettings(
-		false,               // downloadOnAdd
-		10,                  // initialDownloadCount
-		false,               // autoDownload
-		true,                // appendDateToFileName
-		true,                // appendEpisodeNumberToFileName
-		true,                // darkMode
-		true,                // downloadEpisodeImages
-		false,               // generateNFOFile
-		true,                // dontDownloadDeletedFromDisk
-		"http://test.local", // baseURL
-		10,                  // maxDownloadConcurrency
-		"TestAgent/1.0",     // userAgent
+		false,                          // downloadOnAdd
+		10,                             // initialDownloadCount
+		false,                          // autoDownload
+		"%EpisodeDate%-%EpisodeTitle%", // fileNameFormat
+		false,                          // passthroughPodcastGuid
+		true,                           // darkMode
+		true,                           // downloadEpisodeImages
+		false,                          // generateNFOFile
+		true,                           // dontDownloadDeletedFromDisk
+		"http://test.local",            // baseURL
+		10,                             // maxDownloadConcurrency
+		5,                              // maxDownloadKeep
+		"TestAgent/1.0",                // userAgent
 	)
 
 	require.NoError(t, err, "Should update settings without error")
@@ -359,8 +395,7 @@ func TestUpdateSettings(t *testing.T) {
 	assert.False(t, setting.DownloadOnAdd, "DownloadOnAdd should be updated")
 	assert.Equal(t, 10, setting.InitialDownloadCount, "InitialDownloadCount should be updated")
 	assert.False(t, setting.AutoDownload, "AutoDownload should be updated")
-	assert.True(t, setting.AppendDateToFileName, "AppendDateToFileName should be updated")
-	assert.True(t, setting.AppendEpisodeNumberToFileName, "AppendEpisodeNumberToFileName should be updated")
+	assert.Equal(t, "%EpisodeDate%-%EpisodeTitle%", setting.FileNameFormat, "FileNameFormat should be updated")
 	assert.True(t, setting.DarkMode, "DarkMode should be updated")
 	assert.True(t, setting.DownloadEpisodeImages, "DownloadEpisodeImages should be updated")
 	assert.Equal(t, "http://test.local", setting.BaseURL, "BaseURL should be updated")

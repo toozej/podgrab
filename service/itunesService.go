@@ -8,8 +8,8 @@ import (
 	"os"
 
 	"github.com/TheHippo/podcastindex"
-	"github.com/akhilrex/podgrab/internal/logger"
-	"github.com/akhilrex/podgrab/model"
+	"github.com/toozej/podgrab/internal/logger"
+	"github.com/toozej/podgrab/model"
 )
 
 // SearchService defines the interface for podcast search services.

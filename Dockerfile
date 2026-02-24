@@ -1,41 +1,41 @@
-ARG GO_VERSION=1.21.6
+# setup project and deps
+FROM golang:1.26-trixie AS init
 
-FROM golang:${GO_VERSION}-alpine AS builder
+WORKDIR /go/podgrab/
 
-RUN apk add --no-cache alpine-sdk git && \
-    mkdir -p /api
-WORKDIR /api
-
-COPY go.mod .
-COPY go.sum .
+COPY go.mod* go.sum* ./
 RUN go mod download
 
-COPY . .
-RUN go build -o ./app ./main.go
+COPY . ./
 
-FROM alpine:3.21
+FROM init AS vet
+RUN go vet ./...
 
-LABEL org.opencontainers.image.source="https://github.com/akhilrex/podgrab"
+# run tests
+FROM init AS test
+RUN go test -coverprofile c.out -v ./...
 
+# build binary
+FROM init AS build
+ARG LDFLAGS
+
+RUN CGO_ENABLED=0 go build -ldflags="${LDFLAGS}"
+
+# runtime image including CA certs and tzdata
+FROM gcr.io/distroless/static-debian13:latest
+WORKDIR /go/bin/
+# Copy our static executable.
+COPY --from=build /go/podgrab/podgrab /go/bin/podgrab
+# Expose port for publishing as web service
+EXPOSE 8080
+# Setup volumes for data
 ENV CONFIG=/config
 ENV DATA=/assets
 ENV UID=998
 ENV PID=100
 ENV GIN_MODE=release
 VOLUME ["/config", "/assets"]
-RUN apk add --no-cache ca-certificates
-RUN mkdir -p /config; \
-    mkdir -p /assets; \
-    mkdir -p /api
 
-RUN chmod 777 /config; \
-    chmod 777 /assets
-
-WORKDIR /api
-COPY --from=builder /api/app .
-COPY client ./client
-COPY webassets ./webassets
-
-EXPOSE 8080
-
-ENTRYPOINT ["./app"]
+USER non-root
+# Run the binary.
+ENTRYPOINT ["/go/bin/podgrab"]

@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/akhilrex/podgrab/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/toozej/podgrab/model"
 )
 
 // TestGetPodcastByURL tests podcast retrieval by URL.
@@ -793,7 +793,7 @@ func TestGetPaginatedPodcastItemsNew(t *testing.T) {
 					Page:  1,
 					Count: 10,
 				},
-				IsDownloaded: stringPtr("true"),
+				DownloadStatus: stringPtr("2"),
 			},
 			wantCount: 2,
 		},

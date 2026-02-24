@@ -3,8 +3,8 @@ package database
 import (
 	"time"
 
-	"github.com/akhilrex/podgrab/db"
-	"github.com/akhilrex/podgrab/model"
+	"github.com/toozej/podgrab/db"
+	"github.com/toozej/podgrab/model"
 	"gorm.io/gorm"
 )
 

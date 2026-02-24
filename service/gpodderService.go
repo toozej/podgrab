@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/akhilrex/podgrab/internal/logger"
-	"github.com/akhilrex/podgrab/model"
+	"github.com/toozej/podgrab/internal/logger"
+	"github.com/toozej/podgrab/model"
 )
 
 // type GoodReadsService struct {

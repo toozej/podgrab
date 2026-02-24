@@ -29,12 +29,13 @@ const (
 
 // EpisodesFilter represents episodes filter data.
 type EpisodesFilter struct {
-	IsDownloaded *string     `uri:"isDownloaded" query:"isDownloaded" json:"isDownloaded" form:"isDownloaded"`
-	IsPlayed     *string     `uri:"isPlayed" query:"isPlayed" json:"isPlayed" form:"isPlayed"`
-	Sorting      EpisodeSort `uri:"sorting" query:"sorting" json:"sorting" form:"sorting"`
-	Q            string      `uri:"q" query:"q" json:"q" form:"q"`
-	TagIDs       []string    `uri:"tagIDs" query:"tagIds[]" json:"tagIDs" form:"tagIds[]"`
-	PodcastIDs   []string    `uri:"podcastIDs" query:"podcastIDs[]" json:"podcastIDs" form:"podcastIDs[]"`
+	DownloadStatus *string     `uri:"downloadStatus" query:"downloadStatus" json:"downloadStatus" form:"downloadStatus"`
+	EpisodeType    *string     `uri:"episodeType" query:"episodeType" json:"episodeType" form:"episodeType"`
+	IsPlayed       *string     `uri:"isPlayed" query:"isPlayed" json:"isPlayed" form:"isPlayed"`
+	Sorting        EpisodeSort `uri:"sorting" query:"sorting" json:"sorting" form:"sorting"`
+	Q              string      `uri:"q" query:"q" json:"q" form:"q"`
+	TagIDs         []string    `uri:"tagIDs" query:"tagIds[]" json:"tagIDs" form:"tagIds[]"`
+	PodcastIDs     []string    `uri:"podcastIDs" query:"podcastIDs[]" json:"podcastIDs" form:"podcastIDs[]"`
 	Pagination
 }
 

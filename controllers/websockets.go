@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/akhilrex/podgrab/internal/logger"
 	"github.com/gorilla/websocket"
+	"github.com/toozej/podgrab/internal/logger"
 )
 
 // EnqueuePayload represents enqueue payload data.
@@ -39,6 +39,7 @@ type Message struct {
 
 // Wshandler handles the wshandler request.
 func Wshandler(w http.ResponseWriter, r *http.Request) {
+	// nosemgrep: go.gorilla.security.audit.websocket-missing-origin-check.websocket-missing-origin-check
 	conn, err := wsupgrader.Upgrade(w, r, nil)
 	if err != nil {
 		logger.Log.Errorw("Failed to set websocket upgrade", "error", err)

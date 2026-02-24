@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/akhilrex/podgrab/internal/logger"
-	"github.com/akhilrex/podgrab/model"
+	"github.com/toozej/podgrab/internal/logger"
+	"github.com/toozej/podgrab/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -69,14 +69,14 @@ func GetPaginatedPodcastItemsNew(queryModel *model.EpisodesFilter) (*[]PodcastIt
 	var podcasts []PodcastItem
 	var total int64
 	query := DB.Debug().Preload("Podcast")
-	if queryModel.IsDownloaded != nil {
-		isDownloaded, err := strconv.ParseBool(*queryModel.IsDownloaded)
-		if err == nil {
-			if isDownloaded {
-				query = query.Where("download_status=?", Downloaded)
-			} else {
-				query = query.Where("download_status!=?", Downloaded)
-			}
+	if queryModel.DownloadStatus != nil && *queryModel.DownloadStatus != "nil" {
+		query = query.Where("download_status=?", queryModel.DownloadStatus)
+	}
+	if queryModel.EpisodeType != nil && *queryModel.EpisodeType != "nil" {
+		if *queryModel.EpisodeType == "full" {
+			query = query.Where(DB.Where("episode_type=\"full\"").Or("episode_type=\"\""))
+		} else {
+			query = query.Where("episode_type=?", queryModel.EpisodeType)
 		}
 	}
 	if queryModel.IsPlayed != nil {
@@ -188,7 +188,7 @@ func DeleteTagByID(id string) error {
 
 // GetAllPodcastItemsByPodcastID get all podcast items by podcast id.
 func GetAllPodcastItemsByPodcastID(podcastID string, podcastItems *[]PodcastItem) error {
-	result := DB.Preload(clause.Associations).Where(&PodcastItem{PodcastID: podcastID}).Find(&podcastItems)
+	result := DB.Preload(clause.Associations).Where(&PodcastItem{PodcastID: podcastID}).Order("pub_date desc").Find(&podcastItems)
 	return result.Error
 }
 

@@ -1,7 +1,7 @@
-version: "3.8"
+---
 services:
   podgrab:
-    image: akhilrex/podgrab
+    image: toozej/podgrab
     container_name: podgrab
     environment:
       - CHECK_FREQUENCY=240
@@ -11,3 +11,6 @@ services:
     ports:
       - 8080:8080
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true

@@ -2,21 +2,31 @@
 package main
 
 import (
+	"embed"
 	"fmt"
 	"html/template"
+	"io/fs"
+	"net/http"
 	"os"
 	"path"
 	"strconv"
 	"time"
 
-	"github.com/akhilrex/podgrab/controllers"
-	"github.com/akhilrex/podgrab/db"
-	"github.com/akhilrex/podgrab/internal/logger"
-	"github.com/akhilrex/podgrab/service"
 	"github.com/gin-contrib/location"
 	"github.com/gin-gonic/gin"
 	"github.com/jasonlvhit/gocron"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/toozej/podgrab/controllers"
+	"github.com/toozej/podgrab/db"
+	"github.com/toozej/podgrab/internal/logger"
+	"github.com/toozej/podgrab/service"
+)
+
+var (
+	//go:embed client
+	clientEmbed embed.FS
+	//go:embed webassets
+	webAssetsEmbed embed.FS
 )
 
 func main() {
@@ -129,7 +139,7 @@ func main() {
 			return fmt.Sprintf("%02d:%02d", mins, secs)
 		},
 	}
-	tmpl := template.Must(template.New("main").Funcs(funcMap).ParseGlob("client/*"))
+	tmpl := template.Must(template.New("main").Funcs(funcMap).ParseFS(clientEmbed, "client/*"))
 
 	r.SetHTMLTemplate(tmpl)
 
@@ -146,7 +156,12 @@ func main() {
 	dataPath := os.Getenv("DATA")
 	backupPath := path.Join(os.Getenv("CONFIG"), "backups")
 
-	router.Static("/webassets", "./webassets")
+	webAssets, err := fs.Sub(webAssetsEmbed, "webassets")
+	if err != nil {
+		logger.Log.Fatalw("Failed to load web assets", "error", err)
+	}
+
+	router.StaticFS("/webassets", http.FS(webAssets))
 	router.Static("/assets", dataPath)
 	router.Static(backupPath, backupPath)
 	router.POST("/podcasts", controllers.AddPodcast)
@@ -156,6 +171,7 @@ func main() {
 	router.DELETE("/podcasts/:id", controllers.DeletePodcastByID)
 	router.GET("/podcasts/:id/items", controllers.GetPodcastItemsByPodcastID)
 	router.GET("/podcasts/:id/download", controllers.DownloadAllEpisodesByPodcastID)
+	router.GET("/podcasts/:id/refresh", controllers.RefreshEpisodesByPodcastID)
 	router.DELETE("/podcasts/:id/items", controllers.DeletePodcastEpisodesByID)
 	router.DELETE("/podcasts/:id/podcast", controllers.DeleteOnlyPodcastByID)
 	router.GET("/podcasts/:id/pause", controllers.PausePodcastByID)
@@ -182,6 +198,7 @@ func main() {
 	router.POST("/podcasts/:id/tags/:tagID", controllers.AddTagToPodcast)
 	router.DELETE("/podcasts/:id/tags/:tagID", controllers.RemoveTagFromPodcast)
 
+	router.GET("/refreshAll", controllers.RefreshEpisodes)
 	router.GET("/add", controllers.AddPage)
 	router.GET("/search", controllers.Search)
 	router.GET("/", controllers.HomePage)
@@ -240,6 +257,9 @@ func intiCron() {
 	}
 	if err := gocron.Every(freq).Minutes().Do(service.DownloadMissingImages); err != nil {
 		logger.Log.Errorw("Failed to schedule DownloadMissingImages", "error", err)
+	}
+	if err := gocron.Every(freq).Minutes().Do(service.ClearEpisodeFiles); err != nil {
+		logger.Log.Errorw("Failed to schedule ClearEpisodeFiles", "error", err)
 	}
 	if err := gocron.Every(2).Days().Do(service.CreateBackup); err != nil {
 		logger.Log.Errorw("Failed to schedule CreateBackup", "error", err)
