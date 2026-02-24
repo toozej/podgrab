@@ -7,12 +7,12 @@ import (
 	"path"
 	"strings"
 
-	"github.com/akhilrex/podgrab/db"
-	"github.com/akhilrex/podgrab/internal/logger"
-	"github.com/akhilrex/podgrab/model"
-	"github.com/akhilrex/podgrab/service"
 	"github.com/gin-contrib/location"
 	"github.com/gin-gonic/gin"
+	"github.com/toozej/podgrab/db"
+	"github.com/toozej/podgrab/internal/logger"
+	"github.com/toozej/podgrab/model"
+	"github.com/toozej/podgrab/service"
 )
 
 // Sorting field constants for podcast queries.
@@ -229,6 +229,32 @@ func DownloadAllEpisodesByPodcastID(c *gin.Context) {
 	}
 }
 
+// RefreshEpisodes handles the refresh all episodes request.
+func RefreshEpisodes(c *gin.Context) {
+	go func() {
+		if err := service.RefreshEpisodes(); err != nil {
+			logger.Log.Errorw("refreshing episodes", "error", err)
+		}
+	}()
+	c.JSON(200, gin.H{})
+}
+
+// RefreshEpisodesByPodcastID handles the refresh episodes by podcast id request.
+func RefreshEpisodesByPodcastID(c *gin.Context) {
+	var searchByIDQuery SearchByIDQuery
+
+	if c.ShouldBindUri(&searchByIDQuery) == nil {
+		go func() {
+			if err := service.RefreshPodcastByPodcastID(searchByIDQuery.ID); err != nil {
+				logger.Log.Errorw("refreshing podcast", "id", searchByIDQuery.ID, "error", err)
+			}
+		}()
+		c.JSON(200, gin.H{})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+	}
+}
+
 // GetAllPodcastItems handles the get all podcast items request.
 func GetAllPodcastItems(c *gin.Context) {
 	var filter model.EpisodesFilter
@@ -331,7 +357,7 @@ func GetPodcastItemFileByID(c *gin.Context) {
 
 // GetFileContentType handles the get file content type request.
 func GetFileContentType(filePath string) string {
-	file, err := os.Open(filePath) //nolint:gosec // G304: filePath is from database, managed by application
+	file, err := os.Open(filePath) // #nosec G304 -- filePath is from database, managed by application
 	if err != nil {
 		return "application/octet-stream"
 	}
@@ -527,7 +553,12 @@ func getBaseURL(c *gin.Context) string {
 func createRss(items []db.PodcastItem, title, description, image string, c *gin.Context) model.RssPodcastData {
 	rssItems := make([]model.RssItem, 0, len(items))
 	url := getBaseURL(c)
+	setting := db.GetOrCreateSetting()
 	for i := range items {
+		itemGUID := items[i].ID
+		if setting.PassthroughPodcastGUID && strings.TrimSpace(items[i].GUID) != "" {
+			itemGUID = items[i].GUID
+		}
 		rssItem := model.RssItem{
 			Title:       items[i].Title,
 			Description: items[i].Summary,
@@ -545,7 +576,7 @@ func createRss(items []db.PodcastItem, title, description, image string, c *gin.
 			PubDate: items[i].PubDate.Format("Mon, 02 Jan 2006 15:04:05 -0700"),
 			GUID: model.RssItemGUID{
 				IsPermaLink: "false",
-				Text:        items[i].ID,
+				Text:        itemGUID,
 			},
 			Link:     fmt.Sprintf("%s/allTags", url),
 			Text:     items[i].Title,
@@ -708,10 +739,20 @@ func UpdateSetting(c *gin.Context) {
 	err := c.ShouldBind(&settingModel)
 
 	if err == nil {
-		err = service.UpdateSettings(settingModel.DownloadOnAdd, settingModel.InitialDownloadCount,
-			settingModel.AutoDownload, settingModel.AppendDateToFileName, settingModel.AppendEpisodeNumberToFileName,
-			settingModel.DarkMode, settingModel.DownloadEpisodeImages, settingModel.GenerateNFOFile, settingModel.DontDownloadDeletedFromDisk, settingModel.BaseURL,
-			settingModel.MaxDownloadConcurrency, settingModel.UserAgent,
+		err = service.UpdateSettings(
+			settingModel.DownloadOnAdd,
+			settingModel.InitialDownloadCount,
+			settingModel.AutoDownload,
+			settingModel.FileNameFormat,
+			settingModel.PassthroughPodcastGUID,
+			settingModel.DarkMode,
+			settingModel.DownloadEpisodeImages,
+			settingModel.GenerateNFOFile,
+			settingModel.DontDownloadDeletedFromDisk,
+			settingModel.BaseURL,
+			settingModel.MaxDownloadConcurrency,
+			settingModel.MaxDownloadKeep,
+			settingModel.UserAgent,
 		)
 		if err == nil {
 			c.JSON(200, gin.H{"message": "Success"})

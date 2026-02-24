@@ -8,17 +8,19 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/TheHippo/podcastindex"
-	"github.com/akhilrex/podgrab/db"
-	"github.com/akhilrex/podgrab/internal/logger"
-	"github.com/akhilrex/podgrab/model"
 	"github.com/antchfx/xmlquery"
 	strip "github.com/grokify/html-strip-tags-go"
+	"github.com/toozej/podgrab/db"
+	"github.com/toozej/podgrab/internal/logger"
+	"github.com/toozej/podgrab/internal/sanitize"
+	"github.com/toozej/podgrab/model"
 	"gorm.io/gorm"
 )
 
@@ -424,7 +426,7 @@ func AddPodcastItems(podcast *db.Podcast, newPodcast bool) error {
 	return err
 }
 
-//nolint:unused // Function reserved for future use (see line 387)
+//lint:ignore U1000 kept for future use
 func updateSizeFromURL(itemURLMap map[string]string) {
 	for id, url := range itemURLMap {
 		size, err := GetFileSizeFromURL(url)
@@ -586,24 +588,68 @@ func SetAllEpisodesToDownload(podcastID string) error {
 	return db.SetAllEpisodesToDownload(podcastID)
 }
 
-// GetPodcastPrefix get podcast prefix.
-func GetPodcastPrefix(item *db.PodcastItem, setting *db.Setting) string {
-	prefix := ""
-	if setting.AppendEpisodeNumberToFileName {
+var formatRe = regexp.MustCompile(`%%|%([^%]+)%`)
+
+var formatMap = map[string]interface{}{
+	"%ShowTitle%": func(item *db.PodcastItem, args ...string) string {
+		return item.Podcast.Title
+	},
+	"%EpisodeTitle%": func(item *db.PodcastItem, args ...string) string {
+		return item.Title
+	},
+	"%EpisodeNumber%": func(item *db.PodcastItem, args ...string) string {
 		seq, err := db.GetEpisodeNumber(item.ID, item.PodcastID)
-		if err == nil {
-			prefix = strconv.Itoa(seq)
+		if err != nil {
+			seq = 0
 		}
-	}
-	if setting.AppendDateToFileName {
-		toAppend := item.PubDate.Format("2006-01-02")
-		if prefix == "" {
-			prefix = toAppend
-		} else {
-			prefix = prefix + "-" + toAppend
+		width := 0
+		if len(args) > 0 {
+			if w, err := strconv.Atoi(args[0]); err == nil {
+				width = w
+			}
 		}
+		return fmt.Sprintf("%0*d", width, seq)
+	},
+	"%EpisodeDate%": func(item *db.PodcastItem, args ...string) string {
+		return item.PubDate.Format("2006-01-02")
+	},
+	"%YYYY%": func(item *db.PodcastItem, args ...string) string {
+		return item.PubDate.Format("2006")
+	},
+	"%mm%": func(item *db.PodcastItem, args ...string) string {
+		return item.PubDate.Format("01")
+	},
+	"%dd%": func(item *db.PodcastItem, args ...string) string {
+		return item.PubDate.Format("02")
+	},
+	"%%": func(item *db.PodcastItem, args ...string) string {
+		return "%"
+	},
+}
+
+// FormatFileName formats a filename using the format string and podcast item data.
+func FormatFileName(item *db.PodcastItem, formatString string) string {
+	var matchedTokens = formatRe.FindAllStringIndex(formatString, -1)
+	var previousTokenEndingIndex = 0
+	var formattedFileName = ""
+	for _, t := range matchedTokens {
+		if previousTokenEndingIndex != t[0] {
+			formattedFileName += formatString[previousTokenEndingIndex:t[0]]
+		}
+		token := formatString[t[0]:t[1]]
+		tokenArgs := strings.Split(token[1:len(token)-1], ":")
+		tokenFunction, ok := formatMap["%"+tokenArgs[0]+"%"].(func(*db.PodcastItem, ...string) string)
+		if ok && tokenFunction != nil {
+			token = tokenFunction(item, tokenArgs[1:]...)
+			token = sanitize.Name(token)
+		}
+		formattedFileName += token
+		previousTokenEndingIndex = t[1]
 	}
-	return prefix
+	if previousTokenEndingIndex < len(formatString) {
+		formattedFileName += formatString[previousTokenEndingIndex:]
+	}
+	return formattedFileName
 }
 
 // DownloadMissingEpisodes download missing episodes.
@@ -633,7 +679,8 @@ func DownloadMissingEpisodes() error {
 		wg.Add(1)
 		go func(item db.PodcastItem, setting db.Setting) {
 			defer wg.Done()
-			url, dlErr := Download(item.FileURL, item.Title, item.Podcast.Title, GetPodcastPrefix(&item, &setting))
+			podcastFileName := FormatFileName(&item, setting.FileNameFormat)
+			url, dlErr := Download(item.FileURL, item.Title, item.Podcast.Title, podcastFileName)
 			if dlErr != nil {
 				logger.Log.Errorw("downloading episode", "error", dlErr)
 				return
@@ -671,6 +718,41 @@ func CheckMissingFiles() error {
 				if err := SetPodcastItemAsNotDownloaded((*data)[i].ID, db.NotDownloaded); err != nil {
 					logger.Log.Errorw("setting podcast item as not downloaded", "error", err)
 				}
+			}
+		}
+	}
+	return nil
+}
+
+// ClearEpisodeFiles clears old episode files based on MaxDownloadKeep setting.
+func ClearEpisodeFiles() error {
+	setting := db.GetOrCreateSetting()
+	maxDownloadKeep := setting.MaxDownloadKeep
+	if maxDownloadKeep <= 0 {
+		return nil
+	}
+
+	logger.Log.Infow("Clearing episode files", "max_keep", maxDownloadKeep)
+	var podcasts []db.Podcast
+	err := db.GetAllPodcasts(&podcasts, "")
+	if err != nil {
+		return err
+	}
+	for i := range podcasts {
+		var episodes []db.PodcastItem
+		err = db.GetAllPodcastItemsByPodcastID(podcasts[i].ID, &episodes)
+		if err != nil {
+			return err
+		}
+		downloadedCount := 0
+		for j := range episodes {
+			if episodes[j].DownloadStatus == db.Downloaded {
+				if downloadedCount >= maxDownloadKeep {
+					if err := DeleteEpisodeFile(episodes[j].ID); err != nil {
+						logger.Log.Errorw("deleting episode file", "error", err)
+					}
+				}
+				downloadedCount++
 			}
 		}
 	}
@@ -718,7 +800,8 @@ func DownloadSingleEpisode(podcastItemID string) error {
 		logger.Log.Errorw("setting podcast item as queued for download", "error", queueErr)
 	}
 
-	url, dlErr := Download(podcastItem.FileURL, podcastItem.Title, podcastItem.Podcast.Title, GetPodcastPrefix(&podcastItem, setting))
+	podcastFileName := FormatFileName(&podcastItem, setting.FileNameFormat)
+	url, dlErr := Download(podcastItem.FileURL, podcastItem.Title, podcastItem.Podcast.Title, podcastFileName)
 
 	if dlErr != nil {
 		logger.Log.Error(dlErr.Error())
@@ -743,14 +826,7 @@ func RefreshEpisodes() error {
 		return err
 	}
 	for i := range data {
-		isNewPodcast := data[i].LastEpisode == nil
-		if isNewPodcast {
-			logger.Log.Infow("Processing new podcast", "title", data[i].Title)
-			db.ForceSetLastEpisodeDate(data[i].ID)
-		}
-		if err := AddPodcastItems(&data[i], isNewPodcast); err != nil {
-			logger.Log.Errorw("adding podcast items", "error", err)
-		}
+		RefreshPodcast(&data[i])
 	}
 
 	// Download missing episodes synchronously to avoid race conditions in tests
@@ -759,6 +835,37 @@ func RefreshEpisodes() error {
 	}
 
 	return nil
+}
+
+// RefreshPodcastByPodcastID refreshes a single podcast by ID.
+func RefreshPodcastByPodcastID(podcastID string) error {
+	var podcast db.Podcast
+	err := db.GetPodcastByID(podcastID, &podcast)
+	if err != nil {
+		return err
+	}
+
+	RefreshPodcast(&podcast)
+
+	go func() {
+		if err := DownloadMissingEpisodes(); err != nil {
+			logger.Log.Errorw("downloading missing episodes", "error", err)
+		}
+	}()
+
+	return nil
+}
+
+// RefreshPodcast refreshes a single podcast.
+func RefreshPodcast(podcast *db.Podcast) {
+	isNewPodcast := podcast.LastEpisode == nil
+	if isNewPodcast {
+		logger.Log.Infow("Processing new podcast", "title", podcast.Title)
+		db.ForceSetLastEpisodeDate(podcast.ID)
+	}
+	if err := AddPodcastItems(podcast, isNewPodcast); err != nil {
+		logger.Log.Errorw("adding podcast items", "error", err)
+	}
 }
 
 // DeletePodcastEpisodes delete podcast episodes.
@@ -846,17 +953,28 @@ func DeleteTag(id string) error {
 }
 
 func makeQuery(url string) ([]byte, error) {
-	// link := "https://www.goodreads.com/search/index.xml?q=Good%27s+Omens&key=" + "jCmNlIXjz29GoB8wYsrd0w"
-	// link := "https://www.goodreads.com/search/index.xml?key=jCmNlIXjz29GoB8wYsrd0w&q=Ender%27s+Game"
 	logger.Log.Debugw("Making query", "url", url)
-	req, err := http.NewRequest("GET", url, http.NoBody)
-	if err != nil {
-		return nil, err
+
+	client := &http.Client{
+		Timeout: 30 * time.Second,
 	}
 
-	resp, err := http.DefaultClient.Do(req) //nolint:gosec // G704: URL is a user-provided podcast RSS feed URL, SSRF is by design
+	req, err := http.NewRequest("GET", url, http.NoBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+
+	setting := db.GetOrCreateSetting()
+	if setting.UserAgent != "" {
+		req.Header.Set("User-Agent", setting.UserAgent)
+	} else {
+		req.Header.Set("User-Agent", "AppleCoreMedia/1.0.0.22B82 (iPhone; U; CPU OS 18_1 like Mac OS X; en_us)")
+	}
+	req.Header.Set("Accept", "*/*")
+
+	resp, err := client.Do(req) // #nosec G704 -- URL is a user-provided podcast RSS feed URL, SSRF is by design
+	if err != nil {
+		return nil, fmt.Errorf("error making request: %w", err)
 	}
 
 	defer func() {
@@ -865,9 +983,21 @@ func makeQuery(url string) ([]byte, error) {
 		}
 	}()
 	logger.Log.Debugw("Received response", "status", resp.Status)
-	body, readErr := io.ReadAll(resp.Body)
 
-	return body, readErr
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("HTTP error: %d %s", resp.StatusCode, resp.Status)
+	}
+
+	body, readErr := io.ReadAll(resp.Body)
+	if readErr != nil {
+		return nil, fmt.Errorf("error reading response: %w", readErr)
+	}
+
+	if len(body) == 0 {
+		return nil, errors.New("empty response from server")
+	}
+
+	return body, nil
 }
 
 // GetSearchFromGpodder get search from gpodder.
@@ -910,22 +1040,35 @@ func GetSearchFromPodcastIndex(pod *podcastindex.Podcast) *model.CommonSearchRes
 }
 
 // UpdateSettings update settings.
-func UpdateSettings(downloadOnAdd bool, initialDownloadCount int, autoDownload bool,
-	appendDateToFileName bool, appendEpisodeNumberToFileName bool, darkMode bool, downloadEpisodeImages bool,
-	generateNFOFile bool, dontDownloadDeletedFromDisk bool, baseURL string, maxDownloadConcurrency int, userAgent string) error {
+func UpdateSettings(
+	downloadOnAdd bool,
+	initialDownloadCount int,
+	autoDownload bool,
+	fileNameFormat string,
+	passthroughPodcastGUID bool,
+	darkMode bool,
+	downloadEpisodeImages bool,
+	generateNFOFile bool,
+	dontDownloadDeletedFromDisk bool,
+	baseURL string,
+	maxDownloadConcurrency int,
+	maxDownloadKeep int,
+	userAgent string,
+) error {
 	setting := db.GetOrCreateSetting()
 
 	setting.AutoDownload = autoDownload
 	setting.DownloadOnAdd = downloadOnAdd
 	setting.InitialDownloadCount = initialDownloadCount
-	setting.AppendDateToFileName = appendDateToFileName
-	setting.AppendEpisodeNumberToFileName = appendEpisodeNumberToFileName
+	setting.FileNameFormat = fileNameFormat
+	setting.PassthroughPodcastGUID = passthroughPodcastGUID
 	setting.DarkMode = darkMode
 	setting.DownloadEpisodeImages = downloadEpisodeImages
 	setting.GenerateNFOFile = generateNFOFile
 	setting.DontDownloadDeletedFromDisk = dontDownloadDeletedFromDisk
 	setting.BaseURL = baseURL
 	setting.MaxDownloadConcurrency = maxDownloadConcurrency
+	setting.MaxDownloadKeep = maxDownloadKeep
 	setting.UserAgent = userAgent
 
 	return db.UpdateSettings(setting)

@@ -3,15 +3,15 @@
 Self-hosted podcast manager for automatically downloading and managing podcast
 episodes.
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/SimplicityGuy/podgrab/build.yml?branch=master)](https://github.com/SimplicityGuy/podgrab/actions)
-[![Code Quality](https://img.shields.io/github/actions/workflow/status/SimplicityGuy/podgrab/code-quality.yml?branch=master&label=code%20quality)](https://github.com/SimplicityGuy/podgrab/actions)
-[![Tests](https://img.shields.io/github/actions/workflow/status/SimplicityGuy/podgrab/test.yml?branch=master&label=tests)](https://github.com/SimplicityGuy/podgrab/actions)
-[![E2E Tests](https://img.shields.io/github/actions/workflow/status/SimplicityGuy/podgrab/e2e-test.yml?branch=master&label=e2e)](https://github.com/SimplicityGuy/podgrab/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/akhilrex/podgrab)](https://goreportcard.com/report/github.com/akhilrex/podgrab)
-[![codecov](https://codecov.io/gh/akhilrex/podgrab/branch/master/graph/badge.svg)](https://codecov.io/gh/akhilrex/podgrab)
-[![License](https://img.shields.io/github/license/akhilrex/podgrab)](LICENSE)
-[![Docker Pulls](https://img.shields.io/docker/pulls/akhilrex/podgrab)](https://hub.docker.com/r/akhilrex/podgrab)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/SimplicityGuy/podgrab)](go.mod)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/toozej/podgrab/build.yml?branch=main)](https://github.com/toozej/podgrab/actions)
+[![Code Quality](https://img.shields.io/github/actions/workflow/status/toozej/podgrab/code-quality.yml?branch=main&label=code%20quality)](https://github.com/toozej/podgrab/actions)
+[![Tests](https://img.shields.io/github/actions/workflow/status/toozej/podgrab/test.yml?branch=main&label=tests)](https://github.com/toozej/podgrab/actions)
+[![E2E Tests](https://img.shields.io/github/actions/workflow/status/toozej/podgrab/e2e-test.yml?branch=main&label=e2e)](https://github.com/toozej/podgrab/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/toozej/podgrab)](https://goreportcard.com/report/github.com/toozej/podgrab)
+[![codecov](https://codecov.io/gh/toozej/podgrab/branch/main/graph/badge.svg)](https://codecov.io/gh/toozej/podgrab)
+[![License](https://img.shields.io/github/license/toozej/podgrab)](LICENSE)
+[![Docker Pulls](https://img.shields.io/docker/pulls/toozej/podgrab)](https://hub.docker.com/r/toozej/podgrab)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/toozej/podgrab)](go.mod)
 
 ## Features
 
@@ -37,16 +37,15 @@ docker run -d \
   -v podgrab-config:/config \
   -v podgrab-data:/assets \
   --name=podgrab \
-  akhilrex/podgrab
+  toozej/podgrab
 ```
 
 ### Docker Compose
 
 ```yaml
-version: '3'
 services:
   podgrab:
-    image: akhilrex/podgrab
+    image: toozej/podgrab
     container_name: podgrab
     environment:
       - CHECK_FREQUENCY=240
@@ -59,21 +58,40 @@ services:
 
 ### From Source
 
-**Prerequisites**: Go 1.15+
+**Prerequisites**: Go 1.26+, Make
 
 ```bash
 # Clone repository
-git clone https://github.com/akhilrex/podgrab.git
+git clone https://github.com/toozej/podgrab.git
 cd podgrab
 
-# Build
-go build -o ./app ./main.go
+# Install dependencies and build
+make local-update-deps local-vendor local-build
 
-# Run
-./app
+# Run (requires .env file)
+make local-run
 ```
 
+The compiled binary is output to `out/podgrab`.
+
 Access the web interface at `http://localhost:8080`
+
+### Make Targets
+
+The Makefile provides comprehensive build and development commands:
+
+```bash
+make help                    # Show all available targets
+make local                   # Full local workflow (deps, vet, test, build, run)
+make local-build             # Build binary to out/podgrab
+make local-test              # Run tests with race detection
+make local-cover             # View coverage report in browser
+make pre-commit              # Install and run pre-commit hooks
+make docker-login            # Login to container registries
+make install                 # Install from latest GitHub release
+```
+
+For a complete list of targets, run `make help` or see the [Makefile](Makefile).
 
 ## Configuration
 
@@ -86,6 +104,8 @@ Access the web interface at `http://localhost:8080`
 - `PASSWORD`: Enable basic authentication (username: `podgrab`)
 - `LOG_LEVEL`: Logging verbosity - `debug`, `info`, `warn`, `error` (default:
   `info`)
+- `PUID`: Sets the UID of the container user (default: `1000`)
+- `PGID`: Sets the GID of the container user (default: `1000`)
 
 ### Application Settings
 
@@ -102,21 +122,22 @@ Configure via the web UI at `http://localhost:8080/settings`:
 
 ### Prerequisites
 
-- Go 1.15 or higher
+- Go 1.26 or higher
+- Make (build automation)
 - Chrome/Chromium (for E2E tests)
 - pre-commit (for code quality hooks)
 
 ### Setup
 
 ```bash
-# Install pre-commit hooks
-pre-commit install
+# Install pre-commit hooks and development tools
+make pre-commit
 
-# Run tests
-go test ./... -v
+# Run all tests
+make local-test
 
-# Run with coverage
-go test ./... -coverprofile=coverage.txt
+# View coverage report
+make local-cover
 
 # Run integration tests
 go test ./integration_test/... -v -tags=integration
@@ -178,7 +199,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ## Technology Stack
 
-- **Backend**: Go 1.15+
+- **Backend**: Go 1.26+
 - **Web Framework**: Gin
 - **Database**: GORM with SQLite
 - **Templating**: Go HTML templates
@@ -188,25 +209,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 - **Logging**: Uber Zap (structured logging)
 - **Testing**: chromedp (E2E), testify (assertions)
 
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
-
-- Development setup
-- Code style guidelines
-- Testing requirements
-- Pull request process
-
-## License
-
-This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE)
-file for details.
-
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/akhilrex/podgrab/issues)
+- **Issues**: [GitHub Issues](https://github.com/toozej/podgrab/issues)
 - **Discussions**:
-  [GitHub Discussions](https://github.com/akhilrex/podgrab/discussions)
+  [GitHub Discussions](https://github.com/toozej/podgrab/discussions)
 
 ## Credits
 
@@ -218,21 +225,12 @@ file for details.
 - **Original Repository**: <https://github.com/akhilrex/podgrab>
 - **Docker Hub**: <https://hub.docker.com/r/akhilrex/podgrab>
 
-### This Fork
-
-This fork includes comprehensive testing infrastructure and CI/CD enhancements:
-
-- 100+ tests (unit, integration, E2E) achieving 85%+ coverage
-- Enterprise-grade GitHub Actions workflows
-- Automated quality gates with pre-commit hooks
-- Complete documentation suite
-
-**Testing & CI/CD Implementation**: Claude Sonnet 4.5 (Anthropic)
-
 ## Acknowledgments
 
 Built with ❤️ using Go and open source libraries. Special thanks to:
 
+- [Akhil Gupta](https://github.com/akhilrex) for creating the original podgrab
+- [Robert Wlodarczyk](https://github.com/SimplicityGuy) for creating an updated fork with many modernizations
+- The Podgrab community for feedback and contributions
 - The Go community for excellent tooling and libraries
 - Contributors to gofeed, gin, gorm, and other dependencies
-- The Podgrab community for feedback and contributions

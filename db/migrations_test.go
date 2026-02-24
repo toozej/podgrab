@@ -25,9 +25,9 @@ func TestExecuteAndSaveMigration(t *testing.T) {
 
 	// Execute migration
 	migrationName := "test_migration_fix_status"
-	migrationQuery := "update podcast_items set download_status=2 where download_path!='' and download_status=0"
+	migrationQueries := []string{"update podcast_items set download_status=2 where download_path!='' and download_status=0"}
 
-	err := ExecuteAndSaveMigration(migrationName, migrationQuery)
+	err := ExecuteAndSaveMigration(localMigration{Name: migrationName, Query: migrationQueries})
 	require.NoError(t, err, "Should execute migration without error")
 
 	// Verify migration was executed (status should be fixed)
@@ -60,10 +60,10 @@ func TestExecuteAndSaveMigration_Idempotency(t *testing.T) {
 	})
 
 	migrationName := "test_idempotency"
-	migrationQuery := "update podcast_items set download_status=2 where download_path!='' and download_status=0"
+	migrationQueries := []string{"update podcast_items set download_status=2 where download_path!='' and download_status=0"}
 
 	// First execution
-	err := ExecuteAndSaveMigration(migrationName, migrationQuery)
+	err := ExecuteAndSaveMigration(localMigration{Name: migrationName, Query: migrationQueries})
 	require.NoError(t, err, "First execution should succeed")
 
 	// Count migration records
@@ -72,7 +72,7 @@ func TestExecuteAndSaveMigration_Idempotency(t *testing.T) {
 	assert.Equal(t, int64(1), count1, "Should have one migration record")
 
 	// Second execution (should be skipped)
-	err = ExecuteAndSaveMigration(migrationName, migrationQuery)
+	err = ExecuteAndSaveMigration(localMigration{Name: migrationName, Query: migrationQueries})
 	require.NoError(t, err, "Second execution should succeed but skip")
 
 	// Verify still only one migration record
@@ -129,9 +129,9 @@ func TestMigrationFailure(t *testing.T) {
 
 	// Execute migration with invalid SQL
 	migrationName := "test_invalid_migration"
-	migrationQuery := "invalid sql syntax here"
+	migrationQueries := []string{"invalid sql syntax here"}
 
-	err := ExecuteAndSaveMigration(migrationName, migrationQuery)
+	err := ExecuteAndSaveMigration(localMigration{Name: migrationName, Query: migrationQueries})
 	assert.Error(t, err, "Should error on invalid SQL")
 
 	// Verify migration record was NOT saved
@@ -151,16 +151,16 @@ func TestMigrationOrdering(t *testing.T) {
 
 	// Execute multiple migrations
 	migrations := []struct {
-		name  string
-		query string
+		name    string
+		queries []string
 	}{
-		{"2020_01_01_first", "SELECT 1"},
-		{"2020_01_02_second", "SELECT 1"},
-		{"2020_01_03_third", "SELECT 1"},
+		{"2020_01_01_first", []string{"SELECT 1"}},
+		{"2020_01_02_second", []string{"SELECT 1"}},
+		{"2020_01_03_third", []string{"SELECT 1"}},
 	}
 
 	for _, mig := range migrations {
-		err := ExecuteAndSaveMigration(mig.name, mig.query)
+		err := ExecuteAndSaveMigration(localMigration{Name: mig.name, Query: mig.queries})
 		require.NoError(t, err, "Should execute migration")
 	}
 
@@ -181,11 +181,11 @@ func TestMigrationOrdering(t *testing.T) {
 func TestLocalMigrationStructure(t *testing.T) {
 	mig := localMigration{
 		Name:  "test_migration",
-		Query: "SELECT 1",
+		Query: []string{"SELECT 1"},
 	}
 
 	assert.Equal(t, "test_migration", mig.Name, "Should have name")
-	assert.Equal(t, "SELECT 1", mig.Query, "Should have query")
+	assert.Equal(t, []string{"SELECT 1"}, mig.Query, "Should have query")
 }
 
 // TestMigrationWithEmptyQuery tests handling of empty migration queries.
@@ -198,10 +198,10 @@ func TestMigrationWithEmptyQuery(t *testing.T) {
 	defer func() { DB = originalDB }()
 
 	migrationName := "test_empty_query"
-	migrationQuery := ""
+	migrationQueries := []string{""}
 
 	// Empty query should execute without error but not do anything
-	err := ExecuteAndSaveMigration(migrationName, migrationQuery)
+	err := ExecuteAndSaveMigration(localMigration{Name: migrationName, Query: migrationQueries})
 
 	// Depending on SQLite behavior, this might succeed or fail
 	// The important thing is it doesn't panic

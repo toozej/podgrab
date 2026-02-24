@@ -75,18 +75,19 @@ const (
 // Setting represents setting data.
 type Setting struct {
 	Base
-	UserAgent                     string
-	BaseURL                       string
-	InitialDownloadCount          int  `gorm:"default:5"`
-	MaxDownloadConcurrency        int  `gorm:"default:5"`
-	DarkMode                      bool `gorm:"default:false"`
-	AppendEpisodeNumberToFileName bool `gorm:"default:false"`
-	DownloadEpisodeImages         bool `gorm:"default:false"`
-	GenerateNFOFile               bool `gorm:"default:false"`
-	DontDownloadDeletedFromDisk   bool `gorm:"default:false"`
-	AppendDateToFileName          bool `gorm:"default:false"`
-	AutoDownload                  bool `gorm:"default:true"`
-	DownloadOnAdd                 bool `gorm:"default:true"`
+	FileNameFormat              string `gorm:"default:%EpisodeTitle%"`
+	UserAgent                   string
+	BaseURL                     string
+	InitialDownloadCount        int  `gorm:"default:5"`
+	MaxDownloadConcurrency      int  `gorm:"default:5"`
+	MaxDownloadKeep             int  `gorm:"default:0"`
+	DarkMode                    bool `gorm:"default:false"`
+	DownloadEpisodeImages       bool `gorm:"default:false"`
+	GenerateNFOFile             bool `gorm:"default:false"`
+	DontDownloadDeletedFromDisk bool `gorm:"default:false"`
+	AutoDownload                bool `gorm:"default:true"`
+	DownloadOnAdd               bool `gorm:"default:true"`
+	PassthroughPodcastGUID      bool `gorm:"default:false"`
 }
 
 // Migration represents migration data.

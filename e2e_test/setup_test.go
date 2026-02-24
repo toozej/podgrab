@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/akhilrex/podgrab/controllers"
-	"github.com/akhilrex/podgrab/db"
-	"github.com/akhilrex/podgrab/service"
 	"github.com/chromedp/chromedp"
 	"github.com/gin-gonic/gin"
+	"github.com/toozej/podgrab/controllers"
+	"github.com/toozej/podgrab/db"
+	"github.com/toozej/podgrab/service"
 	"gorm.io/gorm"
 )
 
@@ -71,11 +71,9 @@ func TestMain(m *testing.M) {
 	}
 	// Setup test database
 	database := setupTestDatabase()
-	defer cleanupTestDatabase(database)
 
 	// Setup test server
 	testServer = setupTestServer(database)
-	defer testServer.Close()
 	testServerURL = testServer.URL
 
 	// Setup browser context optimized for CI environments
@@ -93,10 +91,8 @@ func TestMain(m *testing.M) {
 	}
 
 	allocCtx, allocCancel := chromedp.NewExecAllocator(context.Background(), opts...)
-	defer allocCancel()
 
 	testBrowserCtx, cancel = chromedp.NewContext(allocCtx)
-	defer cancel()
 
 	// Pre-warm Chrome so it's ready before the first test runs.
 	// Without this, Chrome startup time counts against the first test's timeout.
@@ -118,6 +114,11 @@ func TestMain(m *testing.M) {
 	// Run tests
 	exitCode := m.Run()
 
+	// Cleanup in reverse order of setup
+	cancel()
+	allocCancel()
+	testServer.Close()
+	cleanupTestDatabase(database)
 	os.Exit(exitCode)
 }
 
@@ -228,19 +229,19 @@ func setupTemplates() *template.Template {
 			if size < divisor {
 				return fmt.Sprintf("%.0f bytes", size)
 			}
-			size = size / divisor
+			size /= divisor
 			if size < divisor {
 				return fmt.Sprintf("%.2f KB", size)
 			}
-			size = size / divisor
+			size /= divisor
 			if size < divisor {
 				return fmt.Sprintf("%.2f MB", size)
 			}
-			size = size / divisor
+			size /= divisor
 			if size < divisor {
 				return fmt.Sprintf("%.2f GB", size)
 			}
-			size = size / divisor
+			size /= divisor
 			return fmt.Sprintf("%.2f TB", size)
 		},
 		"formatDuration": func(total int) string {
@@ -252,7 +253,7 @@ func setupTemplates() *template.Template {
 			hrs := 0
 			if mins >= 60 {
 				hrs = mins / 60
-				mins = mins % 60
+				mins %= 60
 			}
 			if hrs > 0 {
 				return fmt.Sprintf("%02d:%02d:%02d", hrs, mins, secs)

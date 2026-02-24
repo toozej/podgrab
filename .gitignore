@@ -6,6 +6,7 @@
 *.dylib
 app
 podgrab
+out/
 
 # Test binary, built with `go test -c`
 *.test
@@ -15,7 +16,7 @@ podgrab
 *.db
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 assets/*
 keys/*
 backups/*
@@ -25,3 +26,10 @@ nodemon.json
 
 # Pre-commit
 .pre-commit-cache/
+
+# Secrets and env vars files
+*.env
+.env
+
+tmp/
+todo_tmp.md

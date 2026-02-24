@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/akhilrex/podgrab/db"
-	"github.com/akhilrex/podgrab/internal/logger"
-	"github.com/akhilrex/podgrab/model"
-	"github.com/akhilrex/podgrab/service"
 	"github.com/gin-gonic/gin"
+	"github.com/toozej/podgrab/db"
+	"github.com/toozej/podgrab/internal/logger"
+	"github.com/toozej/podgrab/model"
+	"github.com/toozej/podgrab/service"
 )
 
 // SearchGPodderData represents search g podder data data.
@@ -26,18 +26,19 @@ type SearchGPodderData struct {
 
 // SettingModel represents setting model data.
 type SettingModel struct {
-	BaseURL                       string `form:"baseUrl" json:"baseUrl" query:"baseUrl"`
-	UserAgent                     string `form:"userAgent" json:"userAgent" query:"userAgent"`
-	InitialDownloadCount          int    `form:"initialDownloadCount" json:"initialDownloadCount" query:"initialDownloadCount"`
-	MaxDownloadConcurrency        int    `form:"maxDownloadConcurrency" json:"maxDownloadConcurrency" query:"maxDownloadConcurrency"`
-	DownloadOnAdd                 bool   `form:"downloadOnAdd" json:"downloadOnAdd" query:"downloadOnAdd"`
-	AutoDownload                  bool   `form:"autoDownload" json:"autoDownload" query:"autoDownload"`
-	AppendDateToFileName          bool   `form:"appendDateToFileName" json:"appendDateToFileName" query:"appendDateToFileName"`
-	AppendEpisodeNumberToFileName bool   `form:"appendEpisodeNumberToFileName" json:"appendEpisodeNumberToFileName" query:"appendEpisodeNumberToFileName"`
-	DarkMode                      bool   `form:"darkMode" json:"darkMode" query:"darkMode"`
-	DownloadEpisodeImages         bool   `form:"downloadEpisodeImages" json:"downloadEpisodeImages" query:"downloadEpisodeImages"`
-	GenerateNFOFile               bool   `form:"generateNFOFile" json:"generateNFOFile" query:"generateNFOFile"`
-	DontDownloadDeletedFromDisk   bool   `form:"dontDownloadDeletedFromDisk" json:"dontDownloadDeletedFromDisk" query:"dontDownloadDeletedFromDisk"`
+	BaseURL                     string `form:"baseUrl" json:"baseUrl" query:"baseUrl"`
+	UserAgent                   string `form:"userAgent" json:"userAgent" query:"userAgent"`
+	FileNameFormat              string `form:"fileNameFormat" json:"fileNameFormat" query:"fileNameFormat"`
+	InitialDownloadCount        int    `form:"initialDownloadCount" json:"initialDownloadCount" query:"initialDownloadCount"`
+	MaxDownloadConcurrency      int    `form:"maxDownloadConcurrency" json:"maxDownloadConcurrency" query:"maxDownloadConcurrency"`
+	MaxDownloadKeep             int    `form:"maxDownloadKeep" json:"maxDownloadKeep" query:"maxDownloadKeep"`
+	AutoDownload                bool   `form:"autoDownload" json:"autoDownload" query:"autoDownload"`
+	DownloadOnAdd               bool   `form:"downloadOnAdd" json:"downloadOnAdd" query:"downloadOnAdd"`
+	DarkMode                    bool   `form:"darkMode" json:"darkMode" query:"darkMode"`
+	DownloadEpisodeImages       bool   `form:"downloadEpisodeImages" json:"downloadEpisodeImages" query:"downloadEpisodeImages"`
+	GenerateNFOFile             bool   `form:"generateNFOFile" json:"generateNFOFile" query:"generateNFOFile"`
+	DontDownloadDeletedFromDisk bool   `form:"dontDownloadDeletedFromDisk" json:"dontDownloadDeletedFromDisk" query:"dontDownloadDeletedFromDisk"`
+	PassthroughPodcastGUID      bool   `form:"passthroughPodcastGuid" json:"passthroughPodcastGuid" query:"passthroughPodcastGuid"`
 }
 
 var searchOptions = map[string]string{

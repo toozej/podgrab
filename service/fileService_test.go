@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/akhilrex/podgrab/db"
-	testhelpers "github.com/akhilrex/podgrab/internal/testing"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/toozej/podgrab/db"
+	testhelpers "github.com/toozej/podgrab/internal/testing"
 )
 
 // TestGetFileName tests filename generation and sanitization.
@@ -311,40 +311,40 @@ func TestDownload(t *testing.T) {
 	db.CreateTestSetting(t, database)
 
 	tests := []struct {
-		name         string
-		episodeTitle string
-		podcastName  string
-		prefix       string
-		content      []byte
-		statusCode   int
-		wantError    bool
+		name            string
+		episodeTitle    string
+		podcastName     string
+		episodePathName string
+		content         []byte
+		statusCode      int
+		wantError       bool
 	}{
 		{
-			name:         "successful_download",
-			content:      []byte("fake mp3 content"),
-			statusCode:   http.StatusOK,
-			episodeTitle: "Test Episode",
-			podcastName:  "Test Podcast",
-			prefix:       "",
-			wantError:    false,
+			name:            "successful_download",
+			content:         []byte("fake mp3 content"),
+			statusCode:      http.StatusOK,
+			episodeTitle:    "Test Episode",
+			podcastName:     "Test Podcast",
+			episodePathName: "test-episode",
+			wantError:       false,
 		},
 		{
-			name:         "download_with_prefix",
-			content:      []byte("fake mp3 content"),
-			statusCode:   http.StatusOK,
-			episodeTitle: "Episode 2",
-			podcastName:  "Test Podcast",
-			prefix:       "2024-01-15",
-			wantError:    false,
+			name:            "download_with_path_name",
+			content:         []byte("fake mp3 content"),
+			statusCode:      http.StatusOK,
+			episodeTitle:    "Episode 2",
+			podcastName:     "Test Podcast",
+			episodePathName: "2024-01-15-episode-2",
+			wantError:       false,
 		},
 		{
-			name:         "http_error",
-			content:      []byte{},
-			statusCode:   http.StatusInternalServerError,
-			episodeTitle: "Failed Episode",
-			podcastName:  "Test Podcast",
-			prefix:       "",
-			wantError:    true,
+			name:            "http_error",
+			content:         []byte{},
+			statusCode:      http.StatusInternalServerError,
+			episodeTitle:    "Failed Episode",
+			podcastName:     "Test Podcast",
+			episodePathName: "failed-episode",
+			wantError:       true,
 		},
 	}
 
@@ -353,12 +353,13 @@ func TestDownload(t *testing.T) {
 			// Create test server
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(tt.statusCode)
+				// nosemgrep: go.lang.security.audit.xss.no-direct-write-to-responsewriter
 				_, _ = w.Write(tt.content) // Test server - error handling not required
 			}))
 			defer server.Close()
 
 			// Download
-			filePath, err := Download(server.URL, tt.episodeTitle, tt.podcastName, tt.prefix)
+			filePath, err := Download(server.URL, tt.episodeTitle, tt.podcastName, tt.episodePathName)
 
 			if tt.wantError {
 				assert.Error(t, err, "Expected error on failed download")
@@ -374,10 +375,10 @@ func TestDownload(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, tt.content, content, "Should save correct content")
 
-			// Verify prefix in filename if provided
-			if tt.prefix != "" {
+			// Verify episodePathName in filename if provided
+			if tt.episodePathName != "" {
 				fileName := filepath.Base(filePath)
-				assert.Contains(t, fileName, tt.prefix, "Should include prefix in filename")
+				assert.Contains(t, fileName, tt.episodePathName, "Should include episodePathName in filename")
 			}
 		})
 	}
@@ -415,12 +416,12 @@ func TestDownload_ExistingFile(t *testing.T) {
 	defer server.Close()
 
 	// First download
-	filePath1, err := Download(server.URL, "Episode", "Podcast", "")
+	filePath1, err := Download(server.URL, "Episode", "Podcast", "episode")
 	require.NoError(t, err)
 	assert.Equal(t, 1, callCount, "Should make HTTP request on first download")
 
 	// Second download (should skip because file exists)
-	filePath2, err := Download(server.URL, "Episode", "Podcast", "")
+	filePath2, err := Download(server.URL, "Episode", "Podcast", "episode")
 	require.NoError(t, err)
 	assert.Equal(t, filePath1, filePath2, "Should return same path")
 	assert.Equal(t, 1, callCount, "Should not make HTTP request for existing file")
@@ -445,6 +446,7 @@ func TestDownloadPodcastCoverImage(t *testing.T) {
 	imageContent := []byte("fake image data")
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
+		// nosemgrep: go.lang.security.audit.xss.no-direct-write-to-responsewriter
 		_, _ = w.Write(imageContent) // Test server - error handling not required
 	}))
 	defer server.Close()
@@ -486,6 +488,7 @@ func TestDownloadImage(t *testing.T) {
 	imageContent := []byte("episode image data")
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
+		// nosemgrep: go.lang.security.audit.xss.no-direct-write-to-responsewriter
 		_, _ = w.Write(imageContent) // Test server - error handling not required
 	}))
 	defer server.Close()

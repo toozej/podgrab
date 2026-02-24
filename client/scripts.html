@@ -117,6 +117,7 @@
   }
 
   function getWebsocketConnection(onOpen,onMessage){
+    // nosemgrep: javascript.lang.security.detect-insecure-websocket.detect-insecure-websocket - Intentional: uses wss:// for https, ws:// for http
     const wsProto = window.location.protocol.startsWith('https') ? 'wss://' : 'ws://';
           // Create WebSocket connection.
     const socket = new WebSocket(wsProto+window.location.host+'/ws');
@@ -138,7 +139,7 @@
     //     console.log('Message from server ', event.data);
     // });
   }
-  function downloadAllEpisodes(id) {
+      function downloadAllEpisodes(id) {
         var confirmed = confirm(
           "Are you sure you want to download all episodes of this podcast?"
         );
@@ -150,6 +151,34 @@
           .then(function (response) {
             Vue.toasted.show(
               "All episodes of this podcast have been enqueued to download.",
+              {
+                theme: "bubble",
+                type: "info",
+                position: "top-right",
+                duration: 5000,
+              }
+            );
+          })
+          .catch(function (error) {
+            if (error.response && error.response.data && error.response.data.message) {
+
+              Vue.toasted.show(error.response.data.message, {
+                theme: "bubble",
+                type: "error",
+                position: "top-right",
+                duration: 5000,
+              });
+            }
+          })
+          .then(function () {});
+        return false;
+      }
+      function refreshPodcast(id, title) {
+        axios
+          .get("/podcasts/" + id + "/refresh")
+          .then(function (response) {
+            Vue.toasted.show(
+              '"' + title + '" has been enqueued to refresh.',
               {
                 theme: "bubble",
                 type: "info",

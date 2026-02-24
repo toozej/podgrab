@@ -18,28 +18,30 @@ import (
 	"strings"
 	"time"
 
-	"github.com/akhilrex/podgrab/db"
-	"github.com/akhilrex/podgrab/internal/logger"
-	"github.com/akhilrex/podgrab/internal/sanitize"
 	stringy "github.com/gobeam/stringy"
+	"github.com/toozej/podgrab/db"
+	"github.com/toozej/podgrab/internal/logger"
+	"github.com/toozej/podgrab/internal/sanitize"
 )
 
 // Download download.
-func Download(link, episodeTitle, podcastName, prefix string) (string, error) {
+func Download(link, episodeTitle, podcastName, episodePathName string) (string, error) {
 	if link == "" {
 		return "", errors.New("Download path empty")
 	}
 
 	// Calculate file path first
-	fileName := getFileName(link, episodeTitle, ".mp3")
-	if prefix != "" {
-		fileName = fmt.Sprintf("%s-%s", prefix, fileName)
-	}
-	folder := createDataFolderIfNotExists(podcastName)
-	finalPath := path.Join(folder, fileName)
+	fileExtension := path.Ext(getFileName(link, episodeTitle, ".mp3"))
+	finalPath := path.Join(
+		os.Getenv("DATA"),
+		cleanFileName(podcastName),
+		fmt.Sprintf("%s%s", episodePathName, fileExtension),
+	)
+	dir, _ := path.Split(finalPath)
+	createPreSanitizedPath(dir)
 
 	// Check if file already exists - skip download if it does
-	if _, err := os.Stat(finalPath); !os.IsNotExist(err) {
+	if _, err := os.Stat(finalPath); !os.IsNotExist(err) { // #nosec G703 -- path is sanitized via cleanFileName and constructed from DATA env var
 		changeOwnership(finalPath)
 		return finalPath, nil
 	}
@@ -52,7 +54,7 @@ func Download(link, episodeTitle, podcastName, prefix string) (string, error) {
 		logger.Log.Errorw("Error creating request: "+link, err)
 	}
 
-	resp, err := client.Do(req) //nolint:gosec // G704: URL comes from user-provided podcast RSS feeds
+	resp, err := client.Do(req) // #nosec G704 -- URL comes from user-provided podcast RSS feeds
 	if err != nil {
 		logger.Log.Errorw("Error getting response: "+link, err)
 		return "", err
@@ -64,12 +66,13 @@ func Download(link, episodeTitle, podcastName, prefix string) (string, error) {
 	}
 
 	// Validate and clean path to prevent directory traversal
-	if validateErr := validatePath(finalPath, folder); validateErr != nil {
+	dataPath := os.Getenv("DATA")
+	if validateErr := validatePath(finalPath, dataPath); validateErr != nil {
 		return "", validateErr
 	}
 	cleanPath := filepath.Clean(finalPath)
 
-	file, err := os.Create(cleanPath)
+	file, err := os.Create(cleanPath) // #nosec G703 -- path is validated by validatePath and cleaned before use
 	if err != nil {
 		logger.Log.Errorw("Error creating file"+link, err)
 		return "", err
@@ -141,7 +144,7 @@ func DownloadPodcastCoverImage(link, podcastName string) (string, error) {
 		return "", err
 	}
 
-	resp, err := client.Do(req) //nolint:gosec // G704: URL comes from user-provided podcast RSS feeds
+	resp, err := client.Do(req) // #nosec G704 -- URL comes from user-provided podcast RSS feeds
 	if err != nil {
 		logger.Log.Errorw("Error getting response: "+link, err)
 		return "", err
@@ -199,7 +202,7 @@ func DownloadImage(link, episodeID, podcastName string) (string, error) {
 		return "", err
 	}
 
-	resp, err := client.Do(req) //nolint:gosec // G704: URL comes from user-provided podcast RSS feeds
+	resp, err := client.Do(req) // #nosec G704 -- URL comes from user-provided podcast RSS feeds
 	if err != nil {
 		logger.Log.Errorw("Error getting response: "+link, err)
 		return "", err
@@ -250,7 +253,7 @@ func changeOwnership(filePath string) {
 	logger.Log.Debugw("Debug", "value", filePath)
 	if err1 == nil && err2 == nil {
 		logger.Log.Debugw("Debug", "value", filePath+" : Attempting change")
-		if err := os.Chown(filePath, uid, gid); err != nil { //nolint:gosec // G703: filePath validated via validatePath() before calling changeOwnership
+		if err := os.Chown(filePath, uid, gid); err != nil { // #nosec G703 -- filePath validated via validatePath() before calling changeOwnership
 			logger.Log.Errorw("changing ownership", "error", err)
 		}
 	}
@@ -318,7 +321,7 @@ func GetFileSizeFromURL(urlString string) (int64, error) {
 		return 0, err
 	}
 
-	resp, err := http.Head(urlString) //nolint:gosec // G107: URL validated by validateURL function above
+	resp, err := http.Head(urlString) // #nosec G107 -- URL validated by validateURL function above
 	if err != nil {
 		return 0, err
 	}
@@ -348,7 +351,7 @@ func CreateBackup() (string, error) {
 	folder := createConfigFolderIfNotExists("backups")
 	configPath := os.Getenv("CONFIG")
 	tarballFilePath := path.Join(folder, backupFileName)
-	file, err := os.Create(tarballFilePath) //nolint:gosec // G304: path constructed from config folder and timestamp
+	file, err := os.Create(tarballFilePath) // #nosec G304 -- path constructed from config folder and timestamp
 	if err != nil {
 		return "", fmt.Errorf("could not create tarball file '%s', got error '%s'", tarballFilePath, err.Error())
 	}
@@ -359,7 +362,7 @@ func CreateBackup() (string, error) {
 	}()
 
 	dbPath := path.Join(configPath, "podgrab.db")
-	_, err = os.Stat(dbPath) //nolint:gosec // G703: dbPath constructed from CONFIG env var and fixed filename
+	_, err = os.Stat(dbPath) // #nosec G703 -- dbPath constructed from CONFIG env var and fixed filename
 	if err != nil {
 		return "", fmt.Errorf("could not find db file '%s', got error '%s'", dbPath, err.Error())
 	}
@@ -385,7 +388,7 @@ func CreateBackup() (string, error) {
 }
 
 func addFileToTarWriter(filePath string, tarWriter *tar.Writer) error {
-	file, err := os.Open(filePath) //nolint:gosec // G304: filePath is from backup process, constructed from config path
+	file, err := os.Open(filePath) // #nosec G703 G304 -- filePath is from backup process, constructed from config path
 	if err != nil {
 		return fmt.Errorf("could not open file '%s', got error '%s'", filePath, err.Error())
 	}
@@ -443,16 +446,20 @@ func getRequest(urlStr string) (*http.Request, error) {
 	return req, nil
 }
 
-func createFolder(folder, parent string) string {
-	folder = cleanFileName(folder)
-	folderPath := path.Join(parent, folder)
-	if _, err := os.Stat(folderPath); os.IsNotExist(err) { //nolint:gosec // G703: folderPath constructed from sanitized folder name via cleanFileName()
-		if err := os.MkdirAll(folderPath, 0o750); err != nil { //nolint:gosec // G703: folderPath constructed from sanitized folder name via cleanFileName()
+func createPreSanitizedPath(folderPath string) string {
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) { // #nosec G703 -- folderPath comes from application-managed directory
+		if err := os.MkdirAll(folderPath, 0o750); err != nil { // #nosec G703 -- folderPath comes from application-managed directory
 			logger.Log.Errorw("creating folder", "error", err)
 		}
 		changeOwnership(folderPath)
 	}
 	return folderPath
+}
+
+func createFolder(folder, parent string) string {
+	folder = cleanFileName(folder)
+	folderPath := path.Join(parent, folder)
+	return createPreSanitizedPath(folderPath)
 }
 
 func createDataFolderIfNotExists(folder string) string {
@@ -483,7 +490,7 @@ func getFileName(link, title, defaultExtension string) string {
 }
 
 func cleanFileName(original string) string {
-	return sanitize.Name(original)
+	return sanitize.BaseName(original)
 }
 
 func validatePath(filePath, baseDir string) error {

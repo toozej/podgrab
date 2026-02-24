@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/akhilrex/podgrab/internal/logger"
+	"github.com/toozej/podgrab/internal/logger"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

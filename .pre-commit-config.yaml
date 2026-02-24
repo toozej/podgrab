@@ -1,162 +1,123 @@
-# Pre-commit configuration for Podgrab (Go project)
-# See https://pre-commit.com for more information
-
-# Install: pre-commit install && pre-commit install --hook-type commit-msg
-# Run: pre-commit run --all-files
-# Update: pre-commit autoupdate --freeze
-
-default_language_version:
-  python: python3
-
-default_stages: [pre-commit]
+---
+default_language_version: {python: python3}
+minimum_pre_commit_version: "1.15"
 
 repos:
-  # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
+    rev: v6.0.0
     hooks:
-      - id: check-added-large-files
-        args: ['--maxkb=10000']
-        exclude: '^(webassets/|assets/)'
-
-      - id: check-case-conflict
-      - id: check-merge-conflict
-      - id: check-symlinks
-      - id: detect-private-key
-
-      - id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
-        types: [text]
-
-      - id: end-of-file-fixer
-        types: [text]
-        exclude: '^(webassets/|client/|go.sum)'
-
-      - id: mixed-line-ending
-        args: ['--fix=lf']
-        types: [text]
-
       - id: check-yaml
-        args: ['--unsafe']
-        exclude: '^.github/workflows/'
+        name: Check for valid YAML syntax in repo
+        description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_yaml.py
+      - id: detect-private-key
+        name: Check for existence of private key in repo
+        description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/detect_private_key.py
+      - id: trailing-whitespace
+        name: Remove trailing whitespace in YAML,Bash files
+        description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/trailing_whitespace_fixer.py
+        files: \.(sh|yaml|yml)$
+      - id: end-of-file-fixer
+        name: Ensure EOF is consistently only a newline
+        description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/end_of_file_fixer.py
+        files: \.(sh|yaml|yml)$
+      - id: mixed-line-ending
+        name: Ensure line-ending is consistent
+        description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/mixed_line_ending.py
+        files: \.(sh|yaml|yml)$
+      - id: check-executables-have-shebangs
+        name: Checks that non-binary executables have a proper shebang
+        description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_executables_have_shebangs.py
+        files: \.(sh)$
+      - id: check-shebang-scripts-are-executable
+        name: Checks that scripts with shebangs are executable.
+        description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_shebang_scripts_are_executable.py
+        files: \.(sh)$
+          #- id: check-json
+          #  name: Attempts to load all json files to verify syntax.
+          #  description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_json.py
+          #  files: \.(json)$
+          #- id: check-toml
+          #  name: Attempts to load all toml files to verify syntax.
+          #  description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_toml.py
+          #  files: \.(toml)$
+      - id: check-yaml
+        name: Attempts to load all yaml files to verify syntax.
+        description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_yaml.py
+        files: \.(yaml)$
 
-      - id: check-json
-        exclude: '^(go.sum|package-lock.json)'
-
-      - id: check-toml
-
-  # Go-specific hooks (primary language)
-  - repo: https://github.com/dnephin/pre-commit-golang
-    rev: fb24a639f7c938759fe56eeebbb7713b69d60494  # frozen: v0.5.1
+  # format yaml
+  - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+    rev: 0.2.3
     hooks:
+      - id: yamlfmt
+        args: [--mapping, "2", --sequence, "4", --offset, "2", --width, "88", --preserve-quotes]
+
+  # Golang formatting, linting, security and static analysis
+  - repo: https://github.com/tekwizely/pre-commit-golang
+    rev: v1.0.0-rc.4
+    hooks:
+      - id: go-sec-mod
+      - id: go-staticcheck-mod
+      - id: go-critic
+      # disabled until https://github.com/orijtech/structslop/pull/63 is merged
+      # - id: go-structslop-mod
       - id: go-fmt
-        args: ['-w', '-s']
-
       - id: go-imports
-        args: ['-w']
-
-      - id: go-vet
-        exclude: '^(e2e_test|integration_test)/.*\.go$'
-
-      - id: go-mod-tidy
-
-      - id: go-build
-        exclude: '^(e2e_test|integration_test)/.*\.go$'
-
-      - id: go-cyclo
-        args: ['-over', '22']
+      - id: go-test-mod
+        args: [-race]
 
   # golangci-lint - comprehensive Go linting
   - repo: https://github.com/golangci/golangci-lint
-    rev: e2e40021c9007020676c93680a36e3ab06c6cd33  # frozen: v2.8.0
+    rev: v2.10.1
     hooks:
       - id: golangci-lint-full  # Use -full to lint all files, not just new changes
         args:
           - --timeout=5m
           - --config=.golangci.yml
 
-  # Go security scanning (gosec doesn't support pre-commit - run manually with: gosec -exclude-generated -severity=medium -confidence=medium ./...)
-  # - repo: https://github.com/securego/gosec
-  #   rev: v2.18.2
-  #   hooks:
-  #     - id: gosec
-  #       args:
-  #         - -exclude-generated
-  #         - -severity=medium
-  #         - -confidence=medium
-  #         - ./...
-
-  # Markdown formatting (using mdformat)
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 2d496dbc18e31b83a1596685347ffe0b6041daf0  # frozen: 1.0.0
-    hooks:
-      - id: mdformat
-        additional_dependencies:
-          - mdformat-gfm
-        args:
-          - --wrap=80
-        exclude: '^(go.sum|vendor/|CHANGELOG.md)'
-
-  # YAML linting
-  - repo: https://github.com/adrienverge/yamllint
-    rev: cba56bcde1fdd01c1deb3f945e69764c291a6530  # frozen: v1.38.0
-    hooks:
-      - id: yamllint
-        args: ['-c', '.yamllint.yml']
-
-  # Dockerfile linting
-  - repo: https://github.com/hadolint/hadolint
-    rev: 4e697ba704fd23b2409b947a319c19c3ee54d24f  # frozen: v2.14.0
-    hooks:
-      - id: hadolint-docker
-        args:
-          - --ignore=DL3018
-          - --ignore=DL3059
-
-  # GitHub Actions validation
-  - repo: https://github.com/rhysd/actionlint
-    rev: 0933c147c9d6587653d45fdcb4c497c57a65f9af  # frozen: v1.7.10  # pragma: allowlist secret
-    hooks:
-      - id: actionlint-docker
-        args: ['--shellcheck=']
-
-  # JSON Schema validation for GitHub workflows and actions
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: ccf21790019848af3eb4464be2a9d5efed6358f3  # frozen: 0.36.1  # pragma: allowlist secret
-    hooks:
-      - id: check-github-workflows
-        files: ^\.github/workflows/.*\.ya?ml$
-      - id: check-github-actions
-        files: ^\.github/actions/.*/action\.ya?ml$
-
-  # Shell script linting and formatting
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: 745eface02aef23e168a8afb6b5737818efbea95  # frozen: v0.11.0.1
+  # run shellcheck on Bash scripts
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.11.0
     hooks:
       - id: shellcheck
-        args: ['--severity=warning']
-        files: \.(sh|bash)$
 
-  - repo: https://github.com/scop/pre-commit-shfmt
-    rev: 2a30809d16bc7a60d9b97353c797f42b510d3368  # frozen: v3.12.0-2  # pragma: allowlist secret
+  # lint Dockerfile
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.14.0
     hooks:
-      - id: shfmt
-        args: ['-i', '2', '-ci', '-bn', '-w']
-        files: \.(sh|bash)$
+      - id: hadolint-docker
+        args: ["--ignore", "DL3007", "--ignore", "DL3008", "--ignore", "DL3013", "--ignore",
+          "DL3062"]
 
-  # Secret detection
-  - repo: https://github.com/Yelp/detect-secrets
-    rev: 68e8b45440415753fff70a312ece8da92ba85b4a  # frozen: v1.5.0
+  # lint Makefile
+  - repo: https://github.com/checkmake/checkmake/
+    rev: v0.3.0
     hooks:
-      - id: detect-secrets
-        args: ['--baseline', '.secrets.baseline']
-        exclude: '^(go.sum|\.env\.example)$'
+      - id: checkmake
+        files: Makefile
 
-# CI configuration
-ci:
-  autofix_commit_msg: '[pre-commit.ci] auto fixes from pre-commit hooks'
-  autofix_prs: true
-  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
-  autoupdate_schedule: weekly
-  skip: [golangci-lint, gosec, actionlint-docker]  # Skip slow hooks in CI
-  submodules: false
+  # lint GitHub Actions workflows
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.11
+    hooks:
+      - id: actionlint
+
+  # goreleaser config check - disabled, not applicable to this repository
+  # - repo: https://github.com/trussworks/pre-commit-hooks
+  #   rev: v2.0.0
+  #   hooks:
+  #     - id: goreleaser-check
+
+  # run semgrep on all known filetypes
+  - repo: https://github.com/semgrep/pre-commit
+    rev: 'v1.152.0'
+    hooks:
+      - id: semgrep
+        # See https://semgrep.dev/explore to select a ruleset and copy its URL
+        args: ['--config', 'auto', '--error', '--skip-unknown-extensions', '--quiet']
+        exclude: (^webassets/.*\.min\.js$|_test\.go$|^internal/testing/|^docker-compose\.yml$|^main\.go$)
+
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes

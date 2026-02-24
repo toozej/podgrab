@@ -8,11 +8,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/akhilrex/podgrab/db"
-	testhelpers "github.com/akhilrex/podgrab/internal/testing"
-	"github.com/akhilrex/podgrab/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/toozej/podgrab/db"
+	testhelpers "github.com/toozej/podgrab/internal/testing"
+	"github.com/toozej/podgrab/service"
 )
 
 // TestPodcastLifecycle_AddDownloadDelete tests the complete lifecycle of a podcast.

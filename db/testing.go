@@ -230,16 +230,15 @@ func CreateTestSetting(t *testing.T, database *gorm.DB) *Setting {
 	t.Helper()
 
 	setting := &Setting{
-		DownloadOnAdd:                 true,
-		InitialDownloadCount:          5,
-		AutoDownload:                  true,
-		AppendDateToFileName:          false,
-		AppendEpisodeNumberToFileName: false,
-		DarkMode:                      false,
-		DownloadEpisodeImages:         false,
-		GenerateNFOFile:               false,
-		MaxDownloadConcurrency:        5,
-		UserAgent:                     "Podgrab/Test",
+		DownloadOnAdd:          true,
+		InitialDownloadCount:   5,
+		AutoDownload:           true,
+		FileNameFormat:         "%EpisodeTitle%",
+		DarkMode:               false,
+		DownloadEpisodeImages:  false,
+		GenerateNFOFile:        false,
+		MaxDownloadConcurrency: 5,
+		UserAgent:              "Podgrab/Test",
 	}
 
 	if err := database.Create(setting).Error; err != nil {

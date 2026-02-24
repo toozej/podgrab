@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/akhilrex/podgrab/db"
-	applogger "github.com/akhilrex/podgrab/internal/logger"
 	"github.com/google/uuid"
+	"github.com/toozej/podgrab/db"
+	applogger "github.com/toozej/podgrab/internal/logger"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -82,6 +82,7 @@ func CreateMockRSSHandler(rssContent string) http.Handler {
 		w.Header().Set("Content-Type", "application/rss+xml")
 		w.WriteHeader(http.StatusOK)
 		// Test server handler - log error if write fails
+		// nosemgrep: go.lang.security.audit.xss.no-direct-write-to-responsewriter
 		if _, err := w.Write([]byte(rssContent)); err != nil {
 			applogger.Log.Errorw("Error writing RSS response", "error", err)
 		}
@@ -95,6 +96,7 @@ func CreateMockFileHandler(content string) http.Handler {
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(content)))
 		w.WriteHeader(http.StatusOK)
 		// Test server handler - log error if write fails
+		// nosemgrep: go.lang.security.audit.xss.no-direct-write-to-responsewriter
 		if _, err := w.Write([]byte(content)); err != nil {
 			applogger.Log.Errorw("Error writing file response", "error", err)
 		}

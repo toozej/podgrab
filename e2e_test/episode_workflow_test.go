@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/akhilrex/podgrab/db"
 	"github.com/stretchr/testify/require"
+	"github.com/toozej/podgrab/db"
 )
 
 // TestEpisodeWorkflow_ViewEpisodeDetails tests viewing episode information.

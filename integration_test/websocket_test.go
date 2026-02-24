@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/akhilrex/podgrab/controllers"
-	"github.com/akhilrex/podgrab/db"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/toozej/podgrab/controllers"
+	"github.com/toozej/podgrab/db"
 )
 
 // setupWebSocketServer creates a test WebSocket server.
@@ -52,6 +52,7 @@ func TestWebSocket_Connection(t *testing.T) {
 	defer server.Close()
 
 	// Convert http:// to ws://
+	// nosemgrep: javascript.lang.security.detect-insecure-websocket.detect-insecure-websocket - Test uses local httptest server, secure websocket not applicable
 	wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/ws"
 
 	// Connect to WebSocket
@@ -282,6 +283,7 @@ func TestWebSocket_ReconnectionAfterServerRestart(t *testing.T) {
 
 	// Parse URL to get new port
 	u, _ := url.Parse(server.URL)
+	// nosemgrep: javascript.lang.security.detect-insecure-websocket.detect-insecure-websocket - Test uses local httptest server, secure websocket not applicable
 	newWSURL := "ws://" + u.Host + "/ws"
 
 	// Second connection after "restart"

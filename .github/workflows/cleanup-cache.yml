@@ -1,3 +1,4 @@
+---
 name: Cleanup PR Cache
 
 on:
@@ -21,14 +22,14 @@ jobs:
 
           echo "Fetching list of cache keys for PR #${{ github.event.pull_request.number }}"
 
-          cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH -L 100 | cut -f 1 )
+          cacheKeysForPR=$(gh actions-cache list -R "$REPO" -B "$BRANCH" -L 100 | cut -f 1 )
 
           set +e
           echo "Deleting caches..."
           for cacheKey in $cacheKeysForPR
           do
               echo "Deleting cache: $cacheKey"
-              gh actions-cache delete $cacheKey -R $REPO -B $BRANCH --confirm
+              gh actions-cache delete "$cacheKey" -R "$REPO" -B "$BRANCH" --confirm
           done
           echo "Done"
         env:
