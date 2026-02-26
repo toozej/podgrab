@@ -1,0 +1,156 @@
+---
+version: 2
+
+project_name: podgrab
+
+env:
+  - GO111MODULE=on
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - "386"
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - "7"
+    ignore:
+      - goos: windows
+        goarch: arm
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+    main: .
+    binary: podgrab
+
+universal_binaries:
+  - replace: false
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - '^test:'
+      - '^chore'
+      - 'merge conflict'
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+      - go mod tidy
+  groups:
+    - title: Dependency updates
+      regexp: "^.*feat\\(deps\\)*:+.*$"
+      order: 300
+    - title: New Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 100
+    - title: Bug fixes
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 200
+    - title: Documentation updates
+      regexp: "^.*docs[(\\w)]*:+.*$"
+      order: 400
+    - title: Other work
+      order: 9999
+
+dockers_v2:
+  - id: podgrab
+    images:
+      - "toozej/podgrab"
+      - "ghcr.io/toozej/podgrab"
+    tags:
+      - "v{{ .Version }}"
+      - "{{ .Version }}"
+      - "latest"
+    dockerfile: Dockerfile.goreleaser
+    labels:
+      "io.artifacthub.package.readme-url": "https://raw.githubusercontent.com/toozej/podgrab/main/README.md"
+      "io.artifacthub.package.maintainers": "[{\"name\":\"toozej\"}]"
+      "io.artifacthub.package.license": "GPLv3"
+      "org.opencontainers.image.description": "Self-hosted podcast manager"
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+      "org.opencontainers.image.authors": "James Tooze https://github.com/toozej/"
+      "org.opencontainers.image.documentation": "https://raw.githubusercontent.com/toozej/podgrab/main/README.md"
+      "org.opencontainers.image.licenses": "GPL-3.0-only"
+      "org.opencontainers.image.title": "{{.ProjectName}}"
+      "org.opencontainers.image.vendor": "James Tooze"
+    annotations:
+      "index,manifest:org.opencontainers.image.authors": "James Tooze https://github.com/toozej/"
+      "index,manifest:org.opencontainers.image.created": "{{.Date}}"
+      "index,manifest:org.opencontainers.image.description": "Self-hosted podcast manager"
+      "index,manifest:org.opencontainers.image.documentation": "https://raw.githubusercontent.com/toozej/podgrab/main/README.md"
+      "index,manifest:org.opencontainers.image.licenses": "GPL-3.0-only"
+      "index,manifest:org.opencontainers.image.revision": "{{.FullCommit}}"
+      "index,manifest:org.opencontainers.image.source": "https://github.com/toozej/podgrab"
+      "index,manifest:org.opencontainers.image.title": "{{.ProjectName}}"
+      "index,manifest:org.opencontainers.image.vendor": "James Tooze"
+      "index,manifest:org.opencontainers.image.version": "{{.Version}}"
+    extra_files:
+      - client
+      - webassets
+
+archives:
+  - name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    format_overrides:
+      - goos: windows
+        formats: ['zip']
+    files:
+      - README.md
+      - LICENSE
+
+sboms:
+  - artifacts: archive
+
+signs:
+  - cmd: cosign
+    stdin: "{{ .Env.COSIGN_PASSWORD }}"
+    output: true
+    args:
+      - sign-blob
+      - --key=env://COSIGN_PRIVATE_KEY
+      - --yes
+      - --output-signature=${signature}
+      - ${artifact}
+    artifacts: all
+
+docker_signs:
+  - cmd: cosign
+    artifacts: all
+    stdin: "{{ .Env.COSIGN_PASSWORD }}"
+    output: true
+    args:
+      - sign
+      - --key=env://COSIGN_PRIVATE_KEY
+      - --yes
+      - ${artifact}
+
+milestones:
+  - close: true
+
+release:
+  footer: |
+    **Full Changelog**: https://github.com/toozej/podgrab/compare/{{ .PreviousTag }}...{{ .Tag }}
