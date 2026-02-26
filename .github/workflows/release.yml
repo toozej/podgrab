@@ -24,6 +24,9 @@ jobs:
   code-quality:
     name: Code Quality Gate
     uses: ./.github/workflows/code-quality.yml
+    secrets:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
   tests:
     name: Unit & Integration Tests
