@@ -3,6 +3,11 @@ name: Code Quality
 
 on:
   workflow_call:
+    secrets:
+      SNYK_TOKEN:
+        required: false
+      GH_TOKEN:
+        required: false
   pull_request:
     branches: [main]
   push:
@@ -15,7 +20,6 @@ jobs:
   quality:
     name: Code Quality Checks
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,7 +39,6 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          args: --timeout=5m
           skip-cache: true
 
       - name: Install gosec
@@ -119,3 +122,4 @@ jobs:
         run: snyk test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true

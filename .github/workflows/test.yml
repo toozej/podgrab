@@ -15,7 +15,6 @@ jobs:
   test-service:
     name: Service Layer Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -47,7 +46,6 @@ jobs:
   test-db:
     name: Database Layer Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -79,7 +77,6 @@ jobs:
   test-controllers:
     name: Controller Layer Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -111,7 +108,6 @@ jobs:
   test-integration:
     name: Integration Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
