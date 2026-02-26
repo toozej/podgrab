@@ -4,7 +4,7 @@ package db
 import (
 	"time"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/gofrs/uuid/v5"
 	"gorm.io/gorm"
 )
 
@@ -18,6 +18,10 @@ type Base struct {
 
 // BeforeCreate generates a UUID for new records before database insertion
 func (base *Base) BeforeCreate(tx *gorm.DB) error {
-	tx.Statement.SetColumn("ID", uuid.NewV4().String())
+	id, err := uuid.NewV4()
+	if err != nil {
+		return err
+	}
+	tx.Statement.SetColumn("ID", id.String())
 	return nil
 }

@@ -236,12 +236,11 @@ func setupSettings() gin.HandlerFunc {
 }
 
 func intiCron() {
-	checkFrequency, err := strconv.Atoi(os.Getenv("CHECK_FREQUENCY"))
-	if err != nil || checkFrequency <= 0 {
-		checkFrequency = 30
+	freq, err := strconv.ParseUint(os.Getenv("CHECK_FREQUENCY"), 10, 64)
+	if err != nil || freq == 0 {
+		freq = 30
 		logger.Log.Warnw("Invalid CHECK_FREQUENCY, using default", "error", err, "default", 30)
 	}
-	freq := uint64(checkFrequency) //nolint:gosec // G115: Safe conversion - checkFrequency validated to be positive
 	service.UnlockMissedJobs()
 	if err := gocron.Every(freq).Minutes().Do(service.RefreshEpisodes); err != nil {
 		logger.Log.Errorw("Failed to schedule RefreshEpisodes", "error", err)
