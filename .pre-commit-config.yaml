@@ -32,14 +32,14 @@ repos:
         name: Checks that scripts with shebangs are executable.
         description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_shebang_scripts_are_executable.py
         files: \.(sh)$
-          #- id: check-json
-          #  name: Attempts to load all json files to verify syntax.
-          #  description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_json.py
-          #  files: \.(json)$
-          #- id: check-toml
-          #  name: Attempts to load all toml files to verify syntax.
-          #  description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_toml.py
-          #  files: \.(toml)$
+      - id: check-json
+        name: Attempts to load all json files to verify syntax.
+        description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_json.py
+        files: \.(json)$
+      - id: check-toml
+        name: Attempts to load all toml files to verify syntax.
+        description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_toml.py
+        files: \.(toml)$
       - id: check-yaml
         name: Attempts to load all yaml files to verify syntax.
         description: https://github.com/pre-commit/pre-commit-hooks/blob/master/pre_commit_hooks/check_yaml.py
@@ -87,7 +87,7 @@ repos:
     hooks:
       - id: hadolint-docker
         args: ["--ignore", "DL3007", "--ignore", "DL3008", "--ignore", "DL3013", "--ignore",
-          "DL3062"]
+          "DL3018", "--ignore", "DL3059", "--ignore", "DL3062"]
 
   # lint Makefile
   - repo: https://github.com/checkmake/checkmake/
@@ -102,11 +102,10 @@ repos:
     hooks:
       - id: actionlint
 
-  # goreleaser config check - disabled, not applicable to this repository
-  # - repo: https://github.com/trussworks/pre-commit-hooks
-  #   rev: v2.0.0
-  #   hooks:
-  #     - id: goreleaser-check
+  - repo: https://github.com/trussworks/pre-commit-hooks
+    rev: v2.0.0
+    hooks:
+      - id: goreleaser-check
 
   # run semgrep on all known filetypes
   - repo: https://github.com/semgrep/pre-commit
@@ -115,7 +114,7 @@ repos:
       - id: semgrep
         # See https://semgrep.dev/explore to select a ruleset and copy its URL
         args: ['--config', 'auto', '--error', '--skip-unknown-extensions', '--quiet']
-        exclude: (^webassets/.*\.min\.js$|_test\.go$|^internal/testing/|^docker-compose\.yml$|^main\.go$)
+        exclude: (^webassets/.*\.min\.js$|_test\.go$|^internal/testing/|^docker-compose\.yml$)
 
   - repo: meta
     hooks:
