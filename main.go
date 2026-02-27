@@ -27,18 +27,23 @@ var (
 	clientEmbed embed.FS
 	//go:embed webassets
 	webAssetsEmbed embed.FS
+	initDB         = db.Init
 )
 
 func main() {
+	os.Exit(run())
+}
+
+func run() int {
 	defer logger.Sync()
 
 	var err error
-	db.DB, err = db.Init()
+	db.DB, err = initDB()
 	if err != nil {
 		logger.Log.Errorw("Failed to initialize database", "error", err)
-	} else {
-		db.Migrate()
+		return 1
 	}
+	db.Migrate()
 	r := gin.Default()
 
 	r.Use(setupSettings())
@@ -49,7 +54,7 @@ func main() {
 		"intRange": func(start, end int) []int {
 			n := end - start + 1
 			result := make([]int, n)
-			for i := 0; i < n; i++ {
+			for i := range n {
 				result[i] = start + i
 			}
 			return result
@@ -158,7 +163,8 @@ func main() {
 
 	webAssets, err := fs.Sub(webAssetsEmbed, "webassets")
 	if err != nil {
-		logger.Log.Fatalw("Failed to load web assets", "error", err)
+		logger.Log.Errorw("Failed to load web assets", "error", err)
+		return 1
 	}
 
 	router.StaticFS("/webassets", http.FS(webAssets))
@@ -222,8 +228,11 @@ func main() {
 	go intiCron()
 
 	if err := r.Run(); err != nil {
-		logger.Log.Fatalw("Failed to start server", "error", err)
+		logger.Log.Errorw("Failed to start server", "error", err)
+		return 1
 	}
+
+	return 0
 }
 func setupSettings() gin.HandlerFunc {
 	return func(c *gin.Context) {
