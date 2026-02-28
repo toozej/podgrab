@@ -168,7 +168,7 @@ pre-commit: pre-commit-install pre-commit-run ## Install and run pre-commit hook
 pre-commit-install: ## Install pre-commit hooks and necessary binaries
 	command -v apt && apt-get update || echo "package manager not apt"
 	# golangci-lint
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
 	# goimports
 	go install golang.org/x/tools/cmd/goimports@latest
 	# gosec

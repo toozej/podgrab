@@ -21,8 +21,9 @@ var migrations = []localMigration{
 		Query: []string{"update podcast_items set download_status=2 where download_path!='' and download_status=0"},
 	},
 	{
-		Name:  "2023_10_17_AddMaxDownloadKeepColumn",
-		Query: []string{"ALTER TABLE settings ADD COLUMN max_download_keep INT DEFAULT 0"},
+		Name:      "2023_10_17_AddMaxDownloadKeepColumn",
+		Condition: []string{"SELECT CASE WHEN COUNT(*) = 0 THEN 1 ELSE 0 END FROM pragma_table_info('settings') WHERE name = 'max_download_keep'"},
+		Query:     []string{"ALTER TABLE settings ADD COLUMN max_download_keep INT DEFAULT 0"},
 	},
 	{
 		Name:  "2025_09_17_AddPassthroughPodcastGuidColumn",
@@ -39,8 +40,9 @@ var migrations = []localMigration{
 		},
 	},
 	{
-		Name:  "2026_02_22_AddFileNameFormatColumn",
-		Query: []string{"ALTER TABLE settings ADD COLUMN file_name_format TEXT DEFAULT '%EpisodeTitle%'"},
+		Name:      "2026_02_22_AddFileNameFormatColumn",
+		Condition: []string{"SELECT CASE WHEN COUNT(*) = 0 THEN 1 ELSE 0 END FROM pragma_table_info('settings') WHERE name = 'file_name_format'"},
+		Query:     []string{"ALTER TABLE settings ADD COLUMN file_name_format TEXT DEFAULT '%EpisodeTitle%'"},
 	},
 }
 
