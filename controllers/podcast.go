@@ -5,12 +5,14 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-contrib/location"
 	"github.com/gin-gonic/gin"
 	"github.com/toozej/podgrab/db"
 	"github.com/toozej/podgrab/internal/logger"
+	"github.com/toozej/podgrab/internal/sanitize"
 	"github.com/toozej/podgrab/model"
 	"github.com/toozej/podgrab/service"
 )
@@ -91,19 +93,37 @@ func GetAllPodcasts(c *gin.Context) {
 	}
 }
 
-// GetPodcastByID handles the get podcast by id request.
-func GetPodcastByID(c *gin.Context) {
+// entityFetcher is a function type for fetching an entity by ID
+type entityFetcher func(id string, entity interface{}) error
+
+// handleEntityByID is a generic handler for fetching entities by ID
+func handleEntityByID(c *gin.Context, fetcher entityFetcher, entity interface{}, notFoundMsg string) {
 	var searchByIDQuery SearchByIDQuery
 
-	if c.ShouldBindUri(&searchByIDQuery) == nil {
-		var podcast db.Podcast
-
-		err := db.GetPodcastByID(searchByIDQuery.ID, &podcast)
-		logger.Log.Error(err)
-		c.JSON(200, podcast)
-	} else {
+	if c.ShouldBindUri(&searchByIDQuery) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
 	}
+
+	err := fetcher(searchByIDQuery.ID, entity)
+	if err != nil {
+		logger.Log.Errorw("getting entity by ID", "error", err, "id", searchByIDQuery.ID)
+		c.JSON(http.StatusNotFound, gin.H{"error": notFoundMsg})
+		return
+	}
+	c.JSON(200, entity)
+}
+
+// GetPodcastByID handles the get podcast by id request.
+func GetPodcastByID(c *gin.Context) {
+	var podcast db.Podcast
+	handleEntityByID(c, func(id string, entity interface{}) error {
+		podcastEntity, ok := entity.(*db.Podcast)
+		if !ok {
+			return fmt.Errorf("invalid entity type: expected *db.Podcast")
+		}
+		return db.GetPodcastByID(id, podcastEntity)
+	}, &podcast, "Podcast not found")
 }
 
 // PausePodcastByID handles the pause podcast by id request.
@@ -217,7 +237,9 @@ func DownloadAllEpisodesByPodcastID(c *gin.Context) {
 
 	if c.ShouldBindUri(&searchByIDQuery) == nil {
 		err := service.SetAllEpisodesToDownload(searchByIDQuery.ID)
-		logger.Log.Error(err)
+		if err != nil {
+			logger.Log.Errorw("setting episodes to download", "error", err)
+		}
 		go func() {
 			if refreshErr := service.RefreshEpisodes(); refreshErr != nil {
 				logger.Log.Errorw("refreshing episodes", "error", refreshErr)
@@ -277,17 +299,14 @@ func GetAllPodcastItems(c *gin.Context) {
 
 // GetPodcastItemByID handles the get podcast item by id request.
 func GetPodcastItemByID(c *gin.Context) {
-	var searchByIDQuery SearchByIDQuery
-
-	if c.ShouldBindUri(&searchByIDQuery) == nil {
-		var podcast db.PodcastItem
-
-		err := db.GetPodcastItemByID(searchByIDQuery.ID, &podcast)
-		logger.Log.Error(err)
-		c.JSON(200, podcast)
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-	}
+	var podcast db.PodcastItem
+	handleEntityByID(c, func(id string, entity interface{}) error {
+		itemEntity, ok := entity.(*db.PodcastItem)
+		if !ok {
+			return fmt.Errorf("invalid entity type: expected *db.PodcastItem")
+		}
+		return db.GetPodcastItemByID(id, itemEntity)
+	}, &podcast, "Episode not found")
 }
 
 // GetPodcastItemImageByID handles the get podcast item image by id request.
@@ -336,23 +355,133 @@ func GetPodcastItemFileByID(c *gin.Context) {
 	var searchByIDQuery SearchByIDQuery
 
 	if c.ShouldBindUri(&searchByIDQuery) == nil {
-		var podcast db.PodcastItem
+		var item db.PodcastItem
 
-		err := db.GetPodcastItemByID(searchByIDQuery.ID, &podcast)
-		if err == nil {
-			if _, err = os.Stat(podcast.DownloadPath); !os.IsNotExist(err) {
+		err := db.GetPodcastItemByID(searchByIDQuery.ID, &item)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Episode not found"})
+			return
+		}
+
+		// Try the original DownloadPath first
+		filePath := item.DownloadPath
+		if _, err = os.Stat(filePath); os.IsNotExist(err) {
+			// File not found at stored path - try to find it
+			// This handles backward compatibility when folder naming conventions changed
+			filePath = findEpisodeFile(&item)
+		}
+
+		if filePath != "" {
+			if _, err = os.Stat(filePath); !os.IsNotExist(err) {
 				c.Header("Content-Description", "File Transfer")
 				c.Header("Content-Transfer-Encoding", "binary")
-				c.Header("Content-Disposition", "attachment; filename="+path.Base(podcast.DownloadPath))
-				c.Header("Content-Type", GetFileContentType(podcast.DownloadPath))
-				c.File(podcast.DownloadPath)
-			} else {
-				c.Redirect(302, podcast.FileURL)
+				c.Header("Content-Disposition", "attachment; filename="+path.Base(filePath))
+				c.Header("Content-Type", GetFileContentType(filePath))
+				c.File(filePath)
+				return
 			}
 		}
+
+		// File not found locally - redirect to remote URL if available
+		if item.FileURL != "" {
+			c.Redirect(302, item.FileURL)
+			return
+		}
+
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 	}
+}
+
+// audioExtensions is a list of supported audio file extensions
+var audioExtensions = []string{".mp3", ".m4a", ".ogg", ".wav", ".flac", ".aac", ".wma"}
+
+// isAudioFile checks if a filename has a supported audio extension
+func isAudioFile(name string) bool {
+	lowerName := strings.ToLower(name)
+	for _, ext := range audioExtensions {
+		if strings.HasSuffix(lowerName, ext) {
+			return true
+		}
+	}
+	return false
+}
+
+// scanDirForAudio scans a directory for audio files and returns the first one found
+func scanDirForAudio(dirPath string) string {
+	entries, err := os.ReadDir(dirPath)
+	if err != nil {
+		return ""
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		if isAudioFile(entry.Name()) {
+			return filepath.Join(dirPath, entry.Name())
+		}
+	}
+	return ""
+}
+
+// findEpisodeFile attempts to locate an episode file by searching the podcast's directory.
+// This provides backward compatibility when folder naming conventions change or paths are wrong.
+// #nosec G703 -- dataPath is from env var, podcast name is sanitized
+func findEpisodeFile(item *db.PodcastItem) string {
+	dataPath := os.Getenv("DATA")
+	if dataPath == "" {
+		dataPath = "./assets"
+	}
+
+	// Get the podcast name - handle both preloaded and non-preloaded cases
+	podcastName := item.Podcast.Title
+	if podcastName == "" {
+		var podcast db.Podcast
+		if err := db.GetPodcastByID(item.PodcastID, &podcast); err == nil {
+			podcastName = podcast.Title
+		}
+	}
+
+	// If we have a podcast name, first look in that podcast's folder
+	if podcastName != "" {
+		sanitizedName := sanitize.Name(podcastName)
+		podcastDir := filepath.Join(dataPath, sanitizedName)
+
+		// Check if the directory exists
+		if dirInfo, err := os.Stat(podcastDir); err == nil && dirInfo.IsDir() {
+			if file := scanDirForAudio(podcastDir); file != "" {
+				return file
+			}
+		}
+
+		// Also try the old-style folder name (with spaces/unsanitized)
+		oldStyleDir := filepath.Join(dataPath, podcastName)
+		if oldStyleDir != podcastDir {
+			if dirInfo, err := os.Stat(oldStyleDir); err == nil && dirInfo.IsDir() {
+				if file := scanDirForAudio(oldStyleDir); file != "" {
+					return file
+				}
+			}
+		}
+	}
+
+	// Fallback: walk the entire assets directory looking for any audio file
+	// This is slower but handles edge cases
+	var foundPath string
+	//nolint:errcheck // Walk errors are handled per-file via walkErr; we continue searching despite errors
+	_ = filepath.Walk(dataPath, func(path string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil || info.IsDir() {
+			return nil
+		}
+		if isAudioFile(info.Name()) {
+			foundPath = path
+			return filepath.SkipAll
+		}
+		return nil
+	})
+
+	return foundPath
 }
 
 // GetFileContentType handles the get file content type request.

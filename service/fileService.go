@@ -441,7 +441,10 @@ func getRequest(urlStr string) (*http.Request, error) {
 	setting := db.GetOrCreateSetting()
 	if setting.UserAgent != "" {
 		req.Header.Add("User-Agent", setting.UserAgent)
+	} else {
+		req.Header.Add("User-Agent", "AppleCoreMedia/1.0.0.22B82 (iPhone; U; CPU OS 18_1 like Mac OS X; en_us)")
 	}
+	req.Header.Add("Accept", "*/*")
 
 	return req, nil
 }
