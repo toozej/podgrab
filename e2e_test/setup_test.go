@@ -36,6 +36,8 @@ func newExecAllocatorOpts(extra ...chromedp.ExecAllocatorOption) []chromedp.Exec
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("disable-dev-shm-usage", true),
 		chromedp.Flag("disable-gpu", true),
+		chromedp.Flag("disable-software-rasterizer", true),
+		chromedp.Flag("headless", "new"),
 	)
 	if os.Getenv("CI") != "" || os.Getenv("GITHUB_ACTIONS") != "" {
 		opts = append(opts, chromedp.Flag("no-sandbox", true))
@@ -82,6 +84,8 @@ func TestMain(m *testing.M) {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.Flag("disable-dev-shm-usage", true),
 		chromedp.Flag("disable-gpu", true),
+		chromedp.Flag("disable-software-rasterizer", true),
+		chromedp.Flag("headless", "new"),
 	)
 
 	// Add --no-sandbox flag in CI environments
