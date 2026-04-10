@@ -83,13 +83,18 @@ func main() {
 		fmt.Printf("DATA not set, using default: %s\n", dataPath)
 	}
 
-	// Validate paths to prevent path traversal
-	if err := isSubPath(".", configPath); err != nil {
+	// Validate paths are absolute and properly formed
+	absConfig, err := filepath.Abs(configPath)
+	if err != nil {
 		logger.Log.Fatalw("Invalid CONFIG path", "error", err)
 	}
-	if err := isSubPath(".", dataPath); err != nil {
+	configPath = absConfig
+
+	absData, err := filepath.Abs(dataPath)
+	if err != nil {
 		logger.Log.Fatalw("Invalid DATA path", "error", err)
 	}
+	dataPath = absData
 
 	// Initialize database
 	fmt.Println("Initializing database...")
@@ -426,9 +431,16 @@ func isSubPath(basePath, targetPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get absolute path for target: %w", err)
 	}
+	absBase = filepath.Clean(absBase)
 	absTarget = filepath.Clean(absTarget)
 
-	if !strings.HasPrefix(absTarget, absBase+string(filepath.Separator)) && absTarget != absBase {
+	// Ensure base always has trailing separator for proper prefix matching
+	basePrefix := absBase
+	if !strings.HasSuffix(basePrefix, string(filepath.Separator)) {
+		basePrefix += string(filepath.Separator)
+	}
+
+	if !strings.HasPrefix(absTarget, basePrefix) && absTarget != absBase {
 		return fmt.Errorf("path traversal attempt detected: %s is not under %s", targetPath, basePath)
 	}
 	return nil
