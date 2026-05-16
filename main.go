@@ -20,6 +20,7 @@ import (
 	"github.com/toozej/podgrab/db"
 	"github.com/toozej/podgrab/internal/logger"
 	"github.com/toozej/podgrab/service"
+	"github.com/toozej/podgrab/pkg/version"
 )
 
 var (
@@ -218,6 +219,14 @@ func run() int {
 	router.GET("/opml", controllers.GetOmpl)
 	router.GET("/player", controllers.PlayerPage)
 	router.GET("/rss", controllers.GetRss)
+	router.GET("/version", func(c *gin.Context) {
+		data, err := version.JSON()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.Data(http.StatusOK, "application/json", data)
+	})
 
 	r.GET("/ws", func(c *gin.Context) {
 		controllers.Wshandler(c.Writer, c.Request)
