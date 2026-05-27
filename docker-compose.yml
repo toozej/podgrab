@@ -1,7 +1,7 @@
 ---
 services:
   podgrab:
-    image: toozej/podgrab
+    image: toozej/podgrab:latest
     container_name: podgrab
     environment:
       - CHECK_FREQUENCY=240
@@ -14,6 +14,18 @@ services:
     security_opt:
       - no-new-privileges:true
     read_only: true
+    labels:
+      - "traefik.enable=false"
+      # labels below for publishing as web service
+      # - "traefik.docker.network=traefik"
+      # - "traefik.http.routers.podgrab.rule=Host(`podgrab.test`)"
+      # - "traefik.http.routers.podgrab.middlewares=http-redirect-https@file,headers@file"
+      # - "traefik.http.routers.podgrab-secure.entrypoints=https"
+      # - "traefik.http.routers.podgrab-secure.rule=Host(`podgrab.test`)"
+      # - "traefik.http.routers.podgrab-secure.middlewares=headers@file"
+      # - "traefik.http.routers.podgrab-secure.tls=true"
+    # networks:
+      # - traefik
 
   podgrab-migrate:
     build:

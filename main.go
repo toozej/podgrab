@@ -19,8 +19,8 @@ import (
 	"github.com/toozej/podgrab/controllers"
 	"github.com/toozej/podgrab/db"
 	"github.com/toozej/podgrab/internal/logger"
-	"github.com/toozej/podgrab/service"
 	"github.com/toozej/podgrab/pkg/version"
+	"github.com/toozej/podgrab/service"
 )
 
 var (

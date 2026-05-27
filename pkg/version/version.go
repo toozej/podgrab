@@ -34,6 +34,8 @@ package version
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/spf13/cobra"
 )
 
 // Version information variables that are populated by the build system.
@@ -145,6 +147,52 @@ func Get() (Info, error) {
 		BuiltAt: BuiltAt,
 		Builder: Builder,
 	}, nil
+}
+
+// Command creates and returns a cobra command for displaying version information.
+//
+// This function constructs a "version" subcommand that outputs detailed build
+// and version information in JSON format. The command is designed to be added
+// to a root cobra command to provide standard version query functionality.
+//
+// Command characteristics:
+//   - Use: "version" - command name for invocation
+//   - Output: JSON-formatted version information
+//   - Args: No arguments accepted
+//   - Errors: Returns error if JSON marshaling or Info retrieval fails
+//
+// The JSON output includes all available version fields and follows a consistent
+// format that can be parsed by scripts or other automated tools.
+//
+// Returns:
+//   - *cobra.Command: Configured version command ready to be added to parent command
+//
+// Example:
+//
+//	// Add version command to root command
+//	rootCmd.AddCommand(version.Command())
+//
+//	// Command line usage:
+//	// ./podgrab version
+//	// Output: {"Commit":"abc123","Version":"v1.0.0","Branch":"main",...}
+func Command() *cobra.Command {
+	return &cobra.Command{
+		Use:   "version",
+		Short: "Print the version.",
+		Long:  `Print the version and build information.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			info, err := Get()
+			if err != nil {
+				return err
+			}
+			jsonBytes, err := json.Marshal(info)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintln(cmd.OutOrStdout(), string(jsonBytes))
+			return nil
+		},
+	}
 }
 
 // JSON returns the version information as a JSON-encoded byte slice.
