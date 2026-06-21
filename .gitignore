@@ -1,6 +1,4 @@
 # Cosign
-podgrab.key
-cosign.key
 *.sig
 *.bundle
 
